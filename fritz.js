@@ -8,12 +8,12 @@ module.exports = function(RED) {
 		var node = this;
 
 		node.options = {
-			// url: cfg.host,
 			strictSSL: cfg.strictSSL
 		};
 
         node.init = function() {
             var node = this;
+            node.deviceList = [];
             
             node.login().then(function() {
                 node.updateDeviceList().then(function() {
@@ -112,7 +112,7 @@ module.exports = function(RED) {
         node.init();
     };
 	
-	RED.nodes.registerType("fritzapi", Fritzbox, {
+	RED.nodes.registerType("fritz-api", Fritzbox, {
 		credentials: {
 			username: {type: "text"},
 			password: {type: "password"}
@@ -127,8 +127,6 @@ module.exports = function(RED) {
         node.connection = RED.nodes.getNode( config.connection);
 
         node.init = function() {
-            // var node = this;
-            
             node.connection.login().then(function() {
                 node.status({fill: "green", shape: "dot", text: "connected"});
             })
@@ -148,14 +146,12 @@ module.exports = function(RED) {
                 case '':
                     break;
                 case 'getTemperature':
-                    // msg.payload = (+device['temperature'].celsius + (+device['temperature'].offset)) / 10.0;
                     node.connection.fritz( "getTemperature", msg.topic).then( function( t) {
                         msg.payload = +device['temperature'].offset / 10.0 + t;
                         node.send( msg);
                     });
                     break;
                 case 'getTempTarget':
-                    // msg.paylod = +device['hkr'].tsoll / 2.0;
                     node.connection.fritz( "getTempTarget", msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
@@ -211,5 +207,75 @@ module.exports = function(RED) {
         node.init();
     }
 
-    RED.nodes.registerType("thermostat", Thermostat);
+    RED.nodes.registerType( "fritz-thermostat", Thermostat);
+
+
+	function Switch( config) {
+		RED.nodes.createNode(this, config);
+        var node = this;
+        node.config = config;
+        node.connection = RED.nodes.getNode( config.connection);
+
+        node.init = function() {
+            // var node = this;
+            
+            node.connection.login().then(function() {
+                node.status({fill: "green", shape: "dot", text: "connected"});
+            })
+            .catch(function(error) {
+                node.status({fill: "red", shape: "ring", text: "login failed"});
+            });
+        };
+
+		node.on('input', function(msg) {
+            const device = node.connection.getDevice( msg.topic);
+            if (!device) {
+                node.error( "unknown device: " + msg.topic);
+                return;
+            }
+
+            switch( node.config.action) {
+                case '':
+                    break;
+                case 'getSwitchState':
+                    node.connection.fritz( "getSwitchState", msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'setSwitchState':
+                    const cmd = msg.payload ? "setSwitchOn" : "setSwitchOff";
+                    node.connection.fritz( cmd, msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'getSwitchPower':
+                    node.connection.fritz( "getSwitchPower", msg.topic, msg.payload).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'getSwitchEnergy':
+                    node.connection.fritz( "getSwitchEnergy", msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'getSwitchPresence':
+                    node.connection.fritz( "getSwitchPresence", msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                default:
+                    node.error( "Unknown operation: " + node.config.action);
+                    return;
+            }
+		});
+
+        node.init();
+    }
+
+    RED.nodes.registerType("fritz-switch", Switch);
 };

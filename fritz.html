@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  RED.nodes.registerType("fritzapi", {
+  RED.nodes.registerType("fritz-api", {
     category: "config",
     defaults: {
       name: {
@@ -8,10 +8,6 @@
       },
       host: {
         value: "fritz.box",
-        required: true
-      },
-      refresh: {
-        value: 10,
         required: true
       },
       strictSSL: {
@@ -28,12 +24,12 @@
       }
     },
     label: function () {
-      return this.name ? this.name : "FRITZ!Box";
+      return this.name || "FRITZ!Box";
     }
   });
 </script>
 
-<script type="text/x-red" data-template-name="fritzapi">
+<script type="text/x-red" data-template-name="fritz-api">
     <div class="form-row">
         <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-config-input-name"/>
@@ -41,10 +37,6 @@
     <div class="form-row">
         <label for="node-config-input-host"><i class="fa fa-globe"></i> Host</label>
         <input type="text" id="node-config-input-host" style="width: 70%;" />
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-refresh"><i class="fa fa-repeat"></i> Refresh (s)</label>
-        <input type="number" id="node-config-input-refresh" style="width: 70%;" />
     </div>
     <div class="form-row">
         <label>&nbsp;</label>
@@ -64,13 +56,13 @@
 
 
 <script type="text/javascript">
-  RED.nodes.registerType( "thermostat", {
+  RED.nodes.registerType( "fritz-thermostat", {
     category: "advanced",
     paletteLabel: "thermostat",
     color: "#2E90DD",
     defaults: {
       connection: {
-        type: "fritzapi",
+        type: "fritz-api",
         required: true
       },
       name: {
@@ -86,13 +78,13 @@
     icon: "thermostat.png",
 
     label: function () {
-      return this.name ? this.name : "thermostat";
+      return this.name || "thermostat";
     },
 
   });
 </script>
 
-<script type="text/x-red" data-template-name="thermostat">
+<script type="text/x-red" data-template-name="fritz-thermostat">
   <div class="form-row">
     <label for="node-input-connection"><i class="fa fa-globe"></i> Connection</label>
     <input type="text" id="node-input-connection">
@@ -117,3 +109,57 @@
     </div>
       
 </script>
+
+
+<script type="text/javascript">
+  RED.nodes.registerType( "fritz-switch", {
+    category: "advanced",
+    paletteLabel: "switch",
+    color: "#2E90DD",
+    defaults: {
+      connection: {
+        type: "fritz-api",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      action: {
+        required: false
+      },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "switch.png",
+
+    label: function () {
+      return this.name || "switch";
+    },
+
+  });
+</script>
+
+<script type="text/x-red" data-template-name="fritz-switch">
+  <div class="form-row">
+    <label for="node-input-connection"><i class="fa fa-globe"></i> Connection</label>
+    <input type="text" id="node-input-connection">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+      <label for="node-input-action"><i class="fa fa-power-off"></i> Action</label>
+      <select id="node-input-action" id="node-input-action">
+          <option></option>
+          <option value="getSwitchState">Get state</option>
+          <option value="setSwitchState">Set state</option>
+          <option value="getSwitchPower">Get power</option>
+          <option value="getSwitchEnergy">Get energy</option>
+          <option value="getSwitchPresence">Get presence status</option>
+      </select>
+    </div>
+      
+</script>
+

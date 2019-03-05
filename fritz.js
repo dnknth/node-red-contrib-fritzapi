@@ -1,14 +1,14 @@
-var fritz = require("fritzapi"),
-    Promise = require("bluebird");
+var fritz = require( "fritzapi"),
+    Promise = require( "bluebird");
 
 module.exports = function(RED) {
 
-	function Fritzbox( cfg) {
-		RED.nodes.createNode(this, cfg);
+	function Fritzbox( config) {
+		RED.nodes.createNode(this, config);
 		var node = this;
 
 		node.options = {
-			strictSSL: cfg.strictSSL
+			strictSSL: config.strictSSL
 		};
 
         node.init = function() {
@@ -152,7 +152,9 @@ module.exports = function(RED) {
                     });
                     break;
                 case 'getTempTarget':
-                    node.connection.fritz( "getTempTarget", msg.topic).then( function( t) {
+                case 'getTempComfort':
+                case 'getTempNight':
+                    node.connection.fritz( node.config.action, msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
                     });
@@ -170,24 +172,12 @@ module.exports = function(RED) {
                         });
                     });
                     break;
-                case 'getTempComfort':
-                    node.connection.fritz( "getTempComfort", msg.topic).then( function( t) {
-                        msg.payload = t;
-                        node.send( msg);
-                    });
-                    break;
                 case 'setTempComfort':
                     node.connection.fritz( "getTempComfort", msg.topic).then( function( t) {
                         node.connection.fritz( "setTempTarget", msg.topic, t).then( function() {
                             msg.payload = t;
                             node.send( msg);
                         });
-                    });
-                    break;
-                case 'getTempNight':
-                    node.connection.fritz( "getTempNight", msg.topic).then( function( t) {
-                        msg.payload = t;
-                        node.send( msg);
                     });
                     break;
                 case 'setTempNight':
@@ -217,8 +207,6 @@ module.exports = function(RED) {
         node.connection = RED.nodes.getNode( config.connection);
 
         node.init = function() {
-            // var node = this;
-            
             node.connection.login().then(function() {
                 node.status({fill: "green", shape: "dot", text: "connected"});
             })
@@ -237,12 +225,6 @@ module.exports = function(RED) {
             switch( node.config.action) {
                 case '':
                     break;
-                case 'getSwitchState':
-                    node.connection.fritz( "getSwitchState", msg.topic).then( function( t) {
-                        msg.payload = t;
-                        node.send( msg);
-                    });
-                    break;
                 case 'setSwitchState':
                     const cmd = msg.payload ? "setSwitchOn" : "setSwitchOff";
                     node.connection.fritz( cmd, msg.topic).then( function( t) {
@@ -250,20 +232,11 @@ module.exports = function(RED) {
                         node.send( msg);
                     });
                     break;
+                case 'getSwitchState':
                 case 'getSwitchPower':
-                    node.connection.fritz( "getSwitchPower", msg.topic, msg.payload).then( function( t) {
-                        msg.payload = t;
-                        node.send( msg);
-                    });
-                    break;
                 case 'getSwitchEnergy':
-                    node.connection.fritz( "getSwitchEnergy", msg.topic).then( function( t) {
-                        msg.payload = t;
-                        node.send( msg);
-                    });
-                    break;
                 case 'getSwitchPresence':
-                    node.connection.fritz( "getSwitchPresence", msg.topic).then( function( t) {
+                    node.connection.fritz( node.config.action, msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
                     });

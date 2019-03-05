@@ -1,103 +1,42 @@
 var fritz = require("fritzapi"),
-    isWebUri = require('valid-url').isWebUri;
     Promise = require("bluebird");
 
 module.exports = function(RED) {
 
-	function FritzboxConfig(n) {
-		RED.nodes.createNode(this, n);
+	function Fritzbox( cfg) {
+		RED.nodes.createNode(this, cfg);
 		var node = this;
-		if(!n.host) return;
 
-		node.config = {
-			host: n.host,
-			user: node.credentials.username,
-			password: node.credentials.password,
-			port: n.port,
-			ssl: n.ssl
+		node.options = {
+			// url: cfg.host,
+			strictSSL: cfg.strictSSL
 		};
 
         node.init = function() {
-            var accessories = [];
             var node = this;
             
-            fritz.getSessionID(node.config.username || "", node.config.password, {}).then(function(sid) {
-                node.log("Fritz!Box platform login successful");
-                node.sid = sid;
-            })
-            .then(function() {
-                node.log("Discovering devices");
+            node.login().then(function() {
+                node.updateDeviceList().then(function() {
 
-                node.updateDeviceList().then(function(devices) {
-                    var jobs = [];
-
-                    // outlets
-                    jobs.push(node.fritz("getSwitchList").then(function(ains) {
-                        ains.forEach(function(ain) {
-                            node.log("Outlet found: " + ain);
-                        });
-                    }));
-
-                    // thermostats
-                    jobs.push(node.fritz('getThermostatList').then(function(ains) {
-                        ains.forEach(function(ain) {
-                            node.log("Thermostat found: " + ain);
-                        });
-
-                        // add remaining non-api devices that support temperature, e.g. Fritz!DECT 100 repeater
-                        var sensors = [];
-                        devices.forEach(function(device) {
-                            if (device.temperature) {
-                                var ain = device.identifier.replace(/\s/g, '');
-                                if (!accessories.find(function(accessory) {
-                                    return accessory.ain && accessory.ain == ain;
-                                })) {
-                                    sensors.push(ain);
-                                }
-                            }
-                        });
-
-                        if (sensors.length) {
-                            sensors.forEach(function(ain) {
-                                node.log("Sensor found: " + ain);
-                            });
-                        }
-                    }));
-
-                    // alarm sensors
-                    var alarms = [];
-                    devices.forEach(function(device) {
-                        if (device.alert) {
-                            alarms.push(device.identifier);
-                        }
-                    });
-
-                    if (alarms.length) {
-                        alarms.forEach(function(ain) {
-                            node.log("Alarm found: " + ain);
-                        });
-                    }
-
-                    Promise.all(jobs).then(function() {
-                        // TODO
+                    node.deviceList.forEach(function(device) {
+                        node.log( `Found: ${device.identifier} (${device.name})`);
                     });
                 })
                 .catch(function(error) {
-                    node.error("Could not get devices from Fritz!Box. "
-                    + "Please check if device supports the smart home API and user has sufficient privileges.");
+                    node.error( error);
                 });
             })
             .catch(function(error) {
-                node.error("Initializing Fritz!Box platform failed - wrong user credentials?");
+                node.error( error);
             });
         };
 
         node.updateDeviceList = function() {
-            return this.fritz("getDeviceList").then(function(devices) {
+            node.log( "Updating devices");
+            return node.fritz("getDeviceList").then(function(devices) {
                 // cache list of devices in options for reuse by non-API functions
-                this.deviceList = devices;
-                return devices;
-            }.bind(this));
+                node.deviceList = devices;
+            });
         };
 
         node.getDevice = function(ain) {
@@ -107,20 +46,12 @@ module.exports = function(RED) {
             return device || {}; // safeguard
         };
 
-        node.getName = function(ain) {
-            var dev = this.getDevice(ain);
-            return dev.name || ain;
-        };
-
         node.fritz = function(func) {
             var args = Array.prototype.slice.call(arguments, 1);
             var node = this;
 
             // api call tracking
-            if (node.config.concurrent) {
-                this.promise = null;
-            }
-            else if ((this.promise || Promise.resolve()).isPending()) {
+            if ((this.promise || Promise.resolve()).isPending()) {
                 this.pending++;
                 this.debug('%s pending api calls', this.pending);
             }
@@ -135,13 +66,10 @@ module.exports = function(RED) {
 
                 return fritzFunc.apply(node, funcArgs).catch(function(error) {
                     if (error.response && error.response.statusCode == 403) {
-                        return fritz.getSessionID(node.config.username, node.config.password, node.options).then(function(sid) {
+                        return node.login().then(function(sid) {
                             node.log("Fritz!Box session renewed");
-                            node.log("renewed:"+sid);
-                            node.sid = sid;
 
                             funcArgs = [node.sid].concat(args).concat(node.options);
-                            node.log("renewed, now calling:"+funcArgs.toString());
                             return fritzFunc.apply(node, funcArgs);
                         })
                         .catch(function(error) {
@@ -157,8 +85,8 @@ module.exports = function(RED) {
                 });
             })
             .catch(function(error) {
-                node.debug(error);
                 node.error("< %s failed", func);
+                node.error(error);
                 node.promise = null;
 
                 return Promise.reject(func + " failed");
@@ -173,14 +101,18 @@ module.exports = function(RED) {
             return this.promise;
         };
 
-        node.fritzApi = function(func) {
-            return fritz;
+        node.login = function() {
+            return fritz.getSessionID(node.credentials.username || "", node.credentials.password, node.options)
+            .then(function(sid) {
+                node.sid = sid;
+                return sid;
+            });
         }
 
         node.init();
     };
 	
-	RED.nodes.registerType("fritzapi-config", FritzboxConfig, {
+	RED.nodes.registerType("fritzapi", Fritzbox, {
 		credentials: {
 			username: {type: "text"},
 			password: {type: "password"}
@@ -188,16 +120,96 @@ module.exports = function(RED) {
 	});
 
 
-	function Fritzbox(config) {
-		RED.nodes.createNode(this,config);
-		var node = this;
-        node.log( 'Register API');
+	function Thermostat(config) {
+		RED.nodes.createNode(this, config);
+        var node = this;
+        node.config = config;
+        node.connection = RED.nodes.getNode( config.connection);
+
+        node.init = function() {
+            // var node = this;
+            
+            node.connection.login().then(function() {
+                node.status({fill: "green", shape: "dot", text: "connected"});
+            })
+            .catch(function(error) {
+                node.status({fill: "red", shape: "ring", text: "login failed"});
+            });
+        };
 
 		node.on('input', function(msg) {
+            const device = node.connection.getDevice( msg.topic);
+            if (!device) {
+                node.error( "unknown device: " + msg.topic);
+                return;
+            }
+
+            switch( node.config.action) {
+                case '':
+                    break;
+                case 'getTemperature':
+                    // msg.payload = (+device['temperature'].celsius + (+device['temperature'].offset)) / 10.0;
+                    node.connection.fritz( "getTemperature", msg.topic).then( function( t) {
+                        msg.payload = +device['temperature'].offset / 10.0 + t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'getTempTarget':
+                    // msg.paylod = +device['hkr'].tsoll / 2.0;
+                    node.connection.fritz( "getTempTarget", msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'setTempTarget':
+                    node.connection.fritz( "setTempTarget", msg.topic, msg.payload).then( function() {
+                        node.send( msg);
+                    });
+                    break;
+                case 'adjustTempTarget':
+                    node.connection.fritz( "getTempTarget", msg.topic).then( function( t) {
+                        msg.payload = +msg.payload + t;
+                        node.connection.fritz( "setTempTarget", msg.topic, msg.payload).then( function() {
+                            node.send( msg);
+                        });
+                    });
+                    break;
+                case 'getTempComfort':
+                    node.connection.fritz( "getTempComfort", msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'setTempComfort':
+                    node.connection.fritz( "getTempComfort", msg.topic).then( function( t) {
+                        node.connection.fritz( "setTempTarget", msg.topic, t).then( function() {
+                            msg.payload = t;
+                            node.send( msg);
+                        });
+                    });
+                    break;
+                case 'getTempNight':
+                    node.connection.fritz( "getTempNight", msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'setTempNight':
+                    node.connection.fritz( "setTempNight", msg.topic).then( function( t) {
+                        node.connection.fritz( "setTempTarget", msg.topic, t).then( function() {
+                            msg.payload = t;
+                            node.send( msg);
+                        });
+                    });
+                    break;
+                default:
+                    node.error( "Unknown operation: " + node.config.action);
+                    return;
+            }
 		});
 
-		node.on('close', function() {
-		});
-	}
-	RED.nodes.registerType("fritzapi", Fritzbox);
+        node.init();
+    }
+
+    RED.nodes.registerType("thermostat", Thermostat);
 };

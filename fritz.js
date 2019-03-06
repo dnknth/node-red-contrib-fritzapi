@@ -207,7 +207,7 @@ module.exports = function(RED) {
 
 
     /** Swiches have on' and 'off' states, and can report technical values */
-	function Switch( config) {
+	function Outlet( config) {
 		RED.nodes.createNode( this, config);
         var node = this;
         node.config = config;
@@ -244,7 +244,7 @@ module.exports = function(RED) {
         node.connection.statusFlag( node);
     }
 
-    RED.nodes.registerType( "fritz-switch", Switch);
+    RED.nodes.registerType( "fritz-outlet", Outlet);
 
 
     /** Guest wifi can be ON or OFF.
@@ -259,8 +259,6 @@ module.exports = function(RED) {
 		node.on( 'input', function(msg) {
 
             switch( node.config.action) {
-                case '':
-                    break;
                 case 'getGuestWlan':
                     node.connection.fritz( 'getGuestWlan').then( function( t) {
                         msg.payload = t;

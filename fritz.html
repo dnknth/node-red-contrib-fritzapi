@@ -159,9 +159,9 @@
 
 
 <script type="text/javascript">
-  RED.nodes.registerType( "fritz-switch", {
+  RED.nodes.registerType( "fritz-outlet", {
     category: "advanced",
-    paletteLabel: "switch",
+    paletteLabel: "outlet",
     color: "#2E90DD",
     defaults: {
       connection: {
@@ -178,16 +178,16 @@
     },
     inputs: 1,
     outputs: 1,
-    icon: "switch.png",
+    icon: "power.png",
 
     label: function () {
-      return this.name || "switch";
+      return this.name || "outlet";
     },
 
   });
 </script>
 
-<script type="text/x-red" data-template-name="fritz-switch">
+<script type="text/x-red" data-template-name="fritz-outlet">
   <div class="form-row">
     <label for="node-input-connection"><i class="fa fa-globe"></i> Connection</label>
     <input type="text" id="node-input-connection">
@@ -209,8 +209,8 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="fritz-switch">
-  <p>A DECT switch controlled by your FRITZ!Box</p>
+<script type="text/x-red" data-help-name="fritz-outlet">
+  <p>A DECT outlet controlled by your FRITZ!Box</p>
   
   <h3>Inputs</h3>
   <dl class="message-properties">
@@ -227,7 +227,7 @@
   <h3>Output</h3>
   <dl class="message-properties">
       <dt>payload <span class="property-type">boolean | number</span></dt>
-      <dd>The switch state (boolean), energy or power (integer), or presence (boolean).</dd>
+      <dd>The outlet switch state (boolean), energy or power (number), or presence (boolean).</dd>
   </dl>
 </script>
 

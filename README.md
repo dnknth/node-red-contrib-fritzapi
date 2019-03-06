@@ -7,6 +7,10 @@ These nodes are a simple Node-RED wrapper for [andig's](https://github.com/andig
 
 ## Installation
 
+The recommended way is to install directly from Node-RED under `Manage palette`.
+
+Manual installation:
+
 ```bash
 cd ~/.node-red
 npm install node-red-contrib-fritzapi
@@ -20,10 +24,10 @@ enabled on the FRITZ!Box.
 
 ## Usage
 
-The packages contains two nodes, `thermostat` and `switch` under the `advanced` section in the palette.
-Both expect an actuator identification number `AIN` as `topic` on the input message.
+The packages contains `thermostat`, `switch` and `guest wifi` nodes under the `advanced` section in the palette.
+Thermostats and switches expect an actuator identification number `AIN` as `topic` on the input message.
 
-Any payload is accepted for information retrievel. For switch updates, send the desired boolean value
+Any payload is accepted for information retrievel. For switch and wifi updates, send the desired boolean value
 (on or off). For thermostat updates, send the target temperature or adjustment in degrees Celsius.
 
 All actions output the requested or updated value.
@@ -31,7 +35,7 @@ All actions output the requested or updated value.
 ## To Do
 
 - Switches are not tested, as I do not own any. It would be great if someone could help out.
-- Guest Wifi control does not seem to work on FRITZ!OS 7.x
+- Guest Wifi control does not seem to work with FRITZ!OS 7.x
 
 ## Credits
 

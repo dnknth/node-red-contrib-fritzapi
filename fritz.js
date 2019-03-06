@@ -154,6 +154,8 @@ module.exports = function(RED) {
                 case 'getTempTarget':
                 case 'getTempComfort':
                 case 'getTempNight':
+                case 'getBatteryCharge':
+                case 'getWindowOpen':
                     node.connection.fritz( node.config.action, msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
@@ -251,4 +253,52 @@ module.exports = function(RED) {
     }
 
     RED.nodes.registerType("fritz-switch", Switch);
+
+
+	function GuestWifi( config) {
+		RED.nodes.createNode(this, config);
+        var node = this;
+        node.config = config;
+        node.connection = RED.nodes.getNode( config.connection);
+
+        node.init = function() {
+            node.connection.login().then(function() {
+                node.status({fill: "green", shape: "dot", text: "connected"});
+            })
+            .catch(function(error) {
+                node.status({fill: "red", shape: "ring", text: "login failed"});
+            });
+        };
+
+		node.on('input', function(msg) {
+            const device = node.connection.getDevice( msg.topic);
+            if (!device) {
+                node.error( "unknown device: " + msg.topic);
+                return;
+            }
+
+            switch( node.config.action) {
+                case '':
+                    break;
+                case 'getGuestWlan':
+                    node.connection.fritz( 'getGuestWlan').then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'setGuestWlan':
+                    node.connection.fritz( 'setGuestWlan', msg.payload).then( function() {
+                        node.send( msg);
+                    });
+                    break;
+                default:
+                    node.error( "Unknown operation: " + node.config.action);
+                    return;
+            }
+		});
+
+        node.init();
+    }
+
+    RED.nodes.registerType("fritz-guestwifi", GuestWifi);
 };

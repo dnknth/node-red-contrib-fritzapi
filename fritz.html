@@ -53,7 +53,30 @@
     </div>
 </script>
 
-
+<script type="text/x-red" data-help-name="fritz-api">
+  <p>FRITZ!Box connection information</p>
+  
+  <h3>Settings</h3>
+  <dl class="message-properties">
+      <dt>Host
+          <span class="property-type">string</span>
+      </dt>
+      <dd>Host name or IP, defaults to <code>fritz.box</code></dd>
+  </dl>
+  <dl>
+    <dt class="optional">Username
+      <span class="property-type"string</span>
+    </dt>
+    <dd><User name or empty, if your FRITZ!Box only requires a password to log in.</dd>
+  </dl>
+  <dl>
+    <dt>Password
+      <span class="property-type"string</span>
+    </dt>
+    <dd><Admin or user password.</dd>
+  </dl>
+</script>
+  
 
 <script type="text/javascript">
   RED.nodes.registerType( "fritz-thermostat", {
@@ -105,9 +128,33 @@
           <option value="setTempComfort">Set to day temperature</option>
           <option value="getTempNight">Get night temperature</option>
           <option value="setTempNight">Set to night temperature</option>
+          <option value="getBatteryCharge">Get battery charge</option>
+          <option value="getWindowOpen">Get window open</option>
       </select>
     </div>
       
+</script>
+
+<script type="text/x-red" data-help-name="fritz-thermostat">
+  <p>A DECT thermostat controlled by your FRITZ!Box</p>
+
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+      <dt>topic
+          <span class="property-type">string</span>
+      </dt>
+      <dd> Device identification (AIN)</dd>
+      <dt class="optional">payload
+        <span class="property-type">number | any</span>
+      </dt>
+      <dd>Target or adjustment temperature, or anything for lookup actions.</dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+      <dt>payload <span class="property-type">number</span></dt>
+      <dd>The requested or new temperature in degrees Celsius.</dd>
+  </dl>
 </script>
 
 
@@ -160,6 +207,92 @@
           <option value="getSwitchPresence">Get presence status</option>
       </select>
     </div>
-      
 </script>
 
+<script type="text/x-red" data-help-name="fritz-switch">
+  <p>A DECT switch controlled by your FRITZ!Box</p>
+  
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+      <dt>topic
+          <span class="property-type">string</span>
+      </dt>
+      <dd> Device identification (AIN)</dd>
+      <dt class="optional">payload
+        <span class="property-type">number | any</span>
+      </dt>
+      <dd><code>true</code> or <code>false</code> for <code>SetSwitchState</code>, or anything for lookup actions.</dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+      <dt>payload <span class="property-type">boolean | number</span></dt>
+      <dd>The switch state (boolean), energy or power (integer), or presence (boolean).</dd>
+  </dl>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType( "fritz-guestwifi", {
+    category: "advanced",
+    paletteLabel: "guest wifi",
+    color: "#2E90DD",
+    defaults: {
+      connection: {
+        type: "fritz-api",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      action: {
+        required: true
+      },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "wifi.png",
+
+    label: function () {
+      return this.name || "guest wifi";
+    },
+
+  });
+</script>
+
+<script type="text/x-red" data-template-name="fritz-guestwifi">
+  <div class="form-row">
+    <label for="node-input-connection"><i class="fa fa-globe"></i> Connection</label>
+    <input type="text" id="node-input-connection">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+      <label for="node-input-action"><i class="fa fa-wifi"></i> Action</label>
+      <select id="node-input-action" id="node-input-action">
+          <option></option>
+          <option value="getGuestWlan">Get guest Wifi status</option>
+          <option value="setGuestWlan">Set guest Wifi status</option>
+      </select>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="fritz-guestwifi">
+  <p>Enable / disable guest Wifi of your FRITZ!Box</p>
+  
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+      <dt class="optional">payload
+        <span class="property-type">boolean</span>
+      </dt>
+      <dd><code>true</code> or <code>false</code> to enable / disable guest Wifi, or anything for status lookup.</dd>
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+      <dt>payload <span class="property-type">boolean</span></dt>
+      <dd>Whether guest Wifi is enabled</dd>
+  </dl>
+</script>

@@ -192,7 +192,7 @@ module.exports = function(RED) {
                     node.setTempTo( msg, "getTempComfort", 0);
                     break;
                 case 'setTempNight':
-                    node.setTempTo( msg, "setTempNight", 0);
+                    node.setTempTo( msg, "getTempNight", 0);
                     break;
                 default:
                     node.error( "Unknown operation: " + node.config.action);

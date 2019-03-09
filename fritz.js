@@ -148,6 +148,7 @@ module.exports = function(RED) {
         /** Set the target temperature to the value of msg.payload in °C */
         node.setTemp = function( msg) {
             node.connection.fritz( "setTempTarget", msg.topic, msg.payload).then( function() {
+                node.log( `Set ${msg.topic} to ${msg.payload} °C`);
                 node.send( msg);
             });
         };
@@ -222,6 +223,7 @@ module.exports = function(RED) {
                 case 'setSwitchState':
                     const cmd = msg.payload ? "setSwitchOn" : "setSwitchOff";
                     node.connection.fritz( cmd, msg.topic).then( function( t) {
+                        node.log( `${msg.topic} switched ${msg.payload ? 'on' : 'off'}`);
                         msg.payload = t;
                         node.send( msg);
                     });
@@ -267,6 +269,7 @@ module.exports = function(RED) {
                     break;
                 case 'setGuestWlan':
                     node.connection.fritz( 'setGuestWlan', msg.payload).then( function( t) {
+                        node.log( `${msg.payload ? 'Enabled' : 'Disabled'} guest Wifi`);
                         msg.payload = t;
                         node.send( msg);
                     });

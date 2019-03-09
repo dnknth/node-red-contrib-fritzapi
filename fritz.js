@@ -39,6 +39,7 @@ module.exports = function(RED) {
             return node.fritz("getDeviceList").then(function(devices) {
                 // cache list of devices in options for reuse by non-API functions
                 node.deviceList = devices;
+                node.ready = true;
                 devices.forEach( function(device) {
                     node.log( `Found: ${device.identifier} (${device.name})`);
                 });
@@ -46,21 +47,30 @@ module.exports = function(RED) {
         };
 
         /** Check whether the AIN of a device is known */
-        node.checkDevice = function( othernode, ain, flags) {
-            const device = node.deviceList.find( function(device) {
+        node.checkDevice = function( othernode, msg, flags) {
+            if (!node.ready) {
+                node.warn( "Device not ready");
+                return;
+            }
+
+            const ain = msg.ain || msg.topic;
+            const device = node.deviceList.find( function( device) {
                 return device.identifier.replace(/\s/g, '') == ain;
             });
             if (device) return device;
 
             // Not found => log names and AINs of all devices with given feature flags
             othernode.warn( "unknown device: " + ain);
-            let res = {};
-            node.deviceList.forEach( function( device) {
-                if (((+device.functionbitmask) & flags) == flags) {
-                    res[ device.name] = device.identifier;
-                }
-            });
-            othernode.warn( { 'Valid devices' : res});
+
+            if (node.deviceList.length > 0) {
+                let res = {};
+                node.deviceList.forEach( function( device) {
+                    if (((+device.functionbitmask) & flags) == flags) {
+                        res[ device.name] = device.identifier;
+                    }
+                });
+                othernode.warn( { 'Valid devices' : res});
+            }
         };
 
         /** Low-level interface to fritzapi */
@@ -104,6 +114,7 @@ module.exports = function(RED) {
             })
             .catch( function(error) {
                 node.warn( func + " failed");
+                // node.error( error);
                 node.promise = null;
 
                 return Promise.reject( func + " failed");
@@ -147,15 +158,15 @@ module.exports = function(RED) {
 
         /** Set the target temperature to the value of msg.payload in °C */
         node.setTemp = function( msg) {
-            node.connection.fritz( "setTempTarget", msg.topic, msg.payload).then( function() {
-                node.log( `Set ${msg.topic} to ${msg.payload} °C`);
+            node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
+                node.log( `Set ${msg.ain || msg.topic} to ${msg.payload} °C`);
                 node.send( msg);
             });
         };
 
         /** Set the target temperature to a predefined setting, adjusting by an offset value in °C */
         node.setTempTo = function( msg, setting, offset) {
-            node.connection.fritz( setting, msg.topic).then( function( t) {
+            node.connection.fritz( setting, msg.ain || msg.topic).then( function( t) {
                 msg.payload = +t + offset;
                 node.setTemp( msg);
             });
@@ -163,12 +174,12 @@ module.exports = function(RED) {
 
         /** Main message handler */
 		node.on('input', function( msg) {
-            const device = node.connection.checkDevice( node, msg.topic, fritz.FUNCTION_THERMOSTAT);
+            const device = node.connection.checkDevice( node, msg, fritz.FUNCTION_THERMOSTAT);
             if (!device) return;
 
             switch( node.config.action) {
                 case 'getTemperature':
-                    node.connection.fritz( "getTemperature", msg.topic).then( function( t) {
+                    node.connection.fritz( "getTemperature", msg.ain || msg.topic).then( function( t) {
                         msg.payload = +device['temperature'].offset / 10.0 + t;
                         node.send( msg);
                     });
@@ -178,7 +189,7 @@ module.exports = function(RED) {
                 case 'getTempNight':
                 case 'getBatteryCharge':
                 case 'getWindowOpen':
-                    node.connection.fritz( node.config.action, msg.topic).then( function( t) {
+                    node.connection.fritz( node.config.action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
                     });
@@ -216,14 +227,13 @@ module.exports = function(RED) {
 
         /** Main message handler */
 		node.on('input', function( msg) {
-            if (!node.connection.checkDevice(
-                node, msg.topic, fritz.FUNCTION_OUTLET)) return;
+            if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_OUTLET)) return;
 
             switch( node.config.action) {
                 case 'setSwitchState':
                     const cmd = msg.payload ? "setSwitchOn" : "setSwitchOff";
-                    node.connection.fritz( cmd, msg.topic).then( function( t) {
-                        node.log( `${msg.topic} switched ${msg.payload ? 'on' : 'off'}`);
+                    node.connection.fritz( cmd, msg.ain || msg.topic).then( function( t) {
+                        node.log( `${msg.ain || msg.topic} switched ${msg.payload ? 'on' : 'off'}`);
                         msg.payload = t;
                         node.send( msg);
                     });
@@ -232,7 +242,7 @@ module.exports = function(RED) {
                 case 'getSwitchPower':
                 case 'getSwitchEnergy':
                 case 'getSwitchPresence':
-                    node.connection.fritz( node.config.action, msg.topic).then( function( t) {
+                    node.connection.fritz( node.config.action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
                     });
@@ -259,6 +269,10 @@ module.exports = function(RED) {
         node.connection = RED.nodes.getNode( config.connection);
 
 		node.on( 'input', function(msg) {
+            if (!node.connection.ready) {
+                node.warn( "Device not ready");
+                return;
+            }
 
             switch( node.config.action) {
                 case 'getGuestWlan':

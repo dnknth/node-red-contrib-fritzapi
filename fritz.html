@@ -58,22 +58,18 @@
   
   <h3>Settings</h3>
   <dl class="message-properties">
-      <dt>Host
-          <span class="property-type">string</span>
-      </dt>
-      <dd>Host name or IP, defaults to <code>fritz.box</code></dd>
-  </dl>
-  <dl>
+    <dt>Host
+      <span class="property-type">string</span>
+    </dt>
+    <dd>Host name or IP, defaults to <code>fritz.box</code>.</dd>
     <dt class="optional">Username
       <span class="property-type"string</span>
     </dt>
-    <dd><User name or empty, if your FRITZ!Box only requires a password to log in.</dd>
-  </dl>
-  <dl>
+    <dd>User name. Leave empty if the FRITZ!Box only requires a password to log in.</dd>
     <dt>Password
       <span class="property-type"string</span>
     </dt>
-    <dd><Admin or user password.</dd>
+    <dd>Admin or user password.</dd>
   </dl>
 </script>
   
@@ -136,14 +132,18 @@
 </script>
 
 <script type="text/x-red" data-help-name="fritz-thermostat">
-  <p>A DECT thermostat controlled by your FRITZ!Box</p>
+  <p>A DECT thermostat controlled via a FRITZ!Box.</p>
 
   <h3>Inputs</h3>
   <dl class="message-properties">
-      <dt>topic
-          <span class="property-type">string</span>
+      <dt>ain
+        <span class="property-type">string</span>
       </dt>
-      <dd> Device identification (AIN)</dd>
+      <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+      <dt>topic
+        <span class="property-type">string</span>
+      </dt>
+      <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
       <dt class="optional">payload
         <span class="property-type">number | any</span>
       </dt>
@@ -210,15 +210,19 @@
 </script>
 
 <script type="text/x-red" data-help-name="fritz-outlet">
-  <p>A DECT outlet controlled by your FRITZ!Box</p>
+  <p>A DECT outlet controlled via a FRITZ!Box.</p>
   
   <h3>Inputs</h3>
   <dl class="message-properties">
-      <dt>topic
-          <span class="property-type">string</span>
-      </dt>
-      <dd> Device identification (AIN)</dd>
-      <dt class="optional">payload
+    <dt>ain
+      <span class="property-type">string</span>
+    </dt>
+    <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+    <dt>topic
+      <span class="property-type">string</span>
+    </dt>
+    <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+    <dt class="optional">payload
         <span class="property-type">number | any</span>
       </dt>
       <dd><code>true</code> or <code>false</code> for <code>SetSwitchState</code>, or anything for lookup actions.</dd>
@@ -280,7 +284,7 @@
 </script>
 
 <script type="text/x-red" data-help-name="fritz-guestwifi">
-  <p>Enable / disable guest Wifi of your FRITZ!Box</p>
+  <p>Enable / disable guest Wifi of the FRITZ!Box.</p>
   
   <h3>Inputs</h3>
   <dl class="message-properties">

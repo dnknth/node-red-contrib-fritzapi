@@ -159,7 +159,7 @@ module.exports = function(RED) {
         /** Set the target temperature to the value of msg.payload in °C */
         node.setTemp = function( msg) {
             node.connection.fritz( "getTempTarget", msg.ain || msg.topic).then( function( t) {
-                if (t != msg.payload) {
+                if (msg.payload && t != msg.payload) {
                     node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
                         node.log( `Set ${msg.ain || msg.topic} from ${t} to ${msg.payload} °C`);
                         node.send( msg);

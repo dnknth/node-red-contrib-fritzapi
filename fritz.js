@@ -161,7 +161,7 @@ module.exports = function(RED) {
             node.connection.fritz( "getTempTarget", msg.ain || msg.topic).then( function( t) {
                 if (t != msg.payload) {
                     node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
-                        node.log( `Set ${msg.ain || msg.topic} to ${msg.payload} °C`);
+                        node.log( `Set ${msg.ain || msg.topic} from ${t} to ${msg.payload} °C`);
                         node.send( msg);
                     });
                 }

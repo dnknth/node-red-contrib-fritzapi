@@ -25,16 +25,19 @@ enabled on the FRITZ!Box.
 ## Usage
 
 The packages contains `thermostat`, `switch` and `guest wifi` nodes under the `advanced` section in the palette.
-Thermostats and switches expect an actuator identification number `AIN` as `topic` on the input message.
+Thermostats and switches expect an actuator identification number `AIN` as `ain` or `topic` on the input message.
+If both `ain` and `topic` are provided, `ain` has precedence.
 
-Any payload is accepted for information retrievel. For switch and wifi updates, send the desired boolean value
+Any payload is accepted for information retrieval. For switch and wifi updates, send the desired boolean value
 (on or off). For thermostat updates, send the target temperature or adjustment in degrees Celsius.
+Temperature and outlet adjustments are only made if the desired state differs from the actual state.
+All updates are logged.
 
 All actions output the requested or updated value.
 
 ## To Do
 
-- Switches are not tested, as I do not own any. It would be great if someone could help out.
+- Switches are not tested, as I do not own any. All feedback appreciated.
 - Guest Wifi control does not seem to work with FRITZ!OS 7.x
 
 ## Credits

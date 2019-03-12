@@ -158,9 +158,16 @@ module.exports = function(RED) {
 
         /** Set the target temperature to the value of msg.payload in °C */
         node.setTemp = function( msg) {
-            node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
-                node.log( `Set ${msg.ain || msg.topic} to ${msg.payload} °C`);
-                node.send( msg);
+            node.connection.fritz( "getTempTarget", msg.ain || msg.topic).then( function( t) {
+                if (t != msg.payload) {
+                    node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
+                        node.log( `Set ${msg.ain || msg.topic} to ${msg.payload} °C`);
+                        node.send( msg);
+                    });
+                }
+                else {
+                    node.send( msg);
+                }
             });
         };
 
@@ -232,10 +239,16 @@ module.exports = function(RED) {
             switch( node.config.action) {
                 case 'setSwitchState':
                     const cmd = msg.payload ? "setSwitchOn" : "setSwitchOff";
-                    node.connection.fritz( cmd, msg.ain || msg.topic).then( function( t) {
-                        node.log( `${msg.ain || msg.topic} switched ${msg.payload ? 'on' : 'off'}`);
-                        msg.payload = t;
-                        node.send( msg);
+                    node.connection.fritz( "getSwitchState", msg.ain || msg.topic).then( function( t) {
+                        if (t != msg.payload) {
+                            node.connection.fritz( cmd, msg.ain || msg.topic).then( function() {
+                                node.log( `${msg.ain || msg.topic} switched ${msg.payload ? 'on' : 'off'}`);
+                                node.send( msg);
+                            });
+                        }
+                        else {
+                            node.send( msg);
+                        }
                     });
                     break;
                 case 'getSwitchState':
@@ -282,9 +295,8 @@ module.exports = function(RED) {
                     });
                     break;
                 case 'setGuestWlan':
-                    node.connection.fritz( 'setGuestWlan', msg.payload).then( function( t) {
+                    node.connection.fritz( 'setGuestWlan', msg.payload).then( function() {
                         node.log( `${msg.payload ? 'Enabled' : 'Disabled'} guest Wifi`);
-                        msg.payload = t;
                         node.send( msg);
                     });
                     break;

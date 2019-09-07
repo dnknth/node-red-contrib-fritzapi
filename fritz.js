@@ -138,7 +138,6 @@ module.exports = function(RED) {
 
         /** Obtain a session ID for API calls */
         node.login = function() {
-            console.log(node.options["url"]);
             return fritz.getSessionID(node.credentials.username || "", node.credentials.password, node.options)
             .then(function(sid) {
                 node.sid = sid;

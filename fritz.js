@@ -9,7 +9,10 @@ module.exports = function(RED) {
 		var node = this;
         if(/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(config.host))
         {
-            config.host = "http://" + config.host;
+            if(!config.host.includes("http://")) {
+                config.host = "http://" + config.host;
+            }
+            
         }
 		node.options = {
 			strictSSL: config.strictSSL,
@@ -57,7 +60,7 @@ module.exports = function(RED) {
                 return;
             }
 
-            const ain = msg.ain || msg.topic;
+            const ain = msg.ain || msg.topic;
             const device = node.deviceList.find( function( device) {
                 return device.identifier.replace(/\s/g, '') == ain;
             });
@@ -135,6 +138,7 @@ module.exports = function(RED) {
 
         /** Obtain a session ID for API calls */
         node.login = function() {
+            console.log(node.options["url"]);
             return fritz.getSessionID(node.credentials.username || "", node.credentials.password, node.options)
             .then(function(sid) {
                 node.sid = sid;

@@ -7,9 +7,16 @@ module.exports = function(RED) {
 	function Fritzbox( config) {
 		RED.nodes.createNode(this, config);
 		var node = this;
-
+        if(/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(config.host))
+        {
+            if(!config.host.includes("http://")) {
+                config.host = "http://" + config.host;
+            }
+            
+        }
 		node.options = {
-			strictSSL: config.strictSSL
+			strictSSL: config.strictSSL,
+			url: config.host
 		};
 
         /** Login to the box and retrieve device list */
@@ -53,7 +60,7 @@ module.exports = function(RED) {
                 return;
             }
 
-            const ain = msg.ain || msg.topic;
+            const ain = msg.ain || msg.topic;
             const device = node.deviceList.find( function( device) {
                 return device.identifier.replace(/\s/g, '') == ain;
             });

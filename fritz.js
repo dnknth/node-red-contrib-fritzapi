@@ -192,12 +192,7 @@ module.exports = function(RED) {
             if (!device) return;
 
             switch( node.config.action) {
-                case 'getTemperature':
-                    node.connection.fritz( "getTemperature", msg.ain || msg.topic).then( function( t) {
-                        msg.payload = +device['temperature'].offset / 10.0 + t;
-                        node.send( msg);
-                    });
-                    break;
+                case 'getTemperature': // #2
                 case 'getTempTarget':
                 case 'getTempComfort':
                 case 'getTempNight':

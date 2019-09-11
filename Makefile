@@ -12,3 +12,6 @@ sync:
 
 restart:
 	ssh root@$(HOST) systemctl restart node-red || ssh root@$(HOST) systemctl start node-red
+
+clean:
+	rm -rf node_modules

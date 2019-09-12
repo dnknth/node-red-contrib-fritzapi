@@ -4,7 +4,7 @@
   "description": "Home automation node for Fritz!Box, Fritz!DECT and FRITZ!Powerline devices.",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "fritzapi": "^0.10.5"
+    "fritzapi": "^0.10.6"
   },
   "engines": {
     "node": ">=5.0.0"

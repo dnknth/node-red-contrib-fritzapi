@@ -3,15 +3,14 @@ HOST = home
 NAME = $(shell basename $$PWD)
 
 debug: sync
-	ssh root@$(HOST) systemctl stop node-red
-	ssh -t $(USER)@$(HOST) node_modules/node-red/bin/node-red-pi --max_old_space_size=256 -v
+	ssh -t $(HOST) /etc/init.d/node-red stop
+	ssh -t $(HOST) su -l $(USER) -c '"/usr/bin/node-red --max_old_space_size=256 -v"'
 
 sync:
-	rsync -a ./ $(USER)@$(HOST):$(NAME)
-	# ssh $(USER)@$(HOST) "cd $(NAME) ; npm install"
+	rsync *.* $(HOST):/usr/lib/node_modules/node-red-contrib-fritzapi
 
 restart:
-	ssh root@$(HOST) systemctl restart node-red || ssh root@$(HOST) systemctl start node-red
+	ssh -t $(HOST) /etc/init.d/node-red restart
 
 clean:
 	rm -rf node_modules

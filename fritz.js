@@ -5,37 +5,34 @@ module.exports = function(RED) {
 
     /** Connection information for the FRITZ!Box */
 	function Fritzbox( config) {
-		RED.nodes.createNode(this, config);
-		var node = this;
-        if(/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(config.host))
-        {
-            if(!config.host.includes("http://")) {
-                config.host = "http://" + config.host;
-            }
-            
+  		 RED.nodes.createNode( this, config);
+  		 var node = this;
+       
+       if (! /^https?:\/\//.test( config.host)) {
+            config.host = "http://" + config.host;
         }
-		node.options = {
-			strictSSL: config.strictSSL,
-			url: config.host
-		};
+    		node.options = {
+      			strictSSL: config.strictSSL,
+      			url: config.host
+    		};
 
         /** Login to the box and retrieve device list */
         node.init = function() {
             node.deviceList = [];
-            node.login().then(function() {
+            node.login().then( function() {
                 node.updateDeviceList();
             })
-            .catch(function(error) {
+            .catch( function(error) {
                 node.error( error);
             });
         };
 
         /** Show a status indicator on actuator nodes */
         node.statusFlag = function( othernode) {
-            node.login().then(function() {
+            node.login().then( function() {
                 othernode.status({fill: "green", shape: "dot", text: "connected"});
             })
-            .catch(function(error) {
+            .catch( function(error) {
                 othernode.status({fill: "red", shape: "ring", text: "login failed"});
             });
         };
@@ -43,7 +40,7 @@ module.exports = function(RED) {
         /** Query smart home devices from the FRITZ!Box and log them */
         node.updateDeviceList = function() {
             node.log( "Updating devices");
-            return node.fritz("getDeviceList").then(function(devices) {
+            return node.fritz("getDeviceList").then( function(devices) {
                 // cache list of devices in options for reuse by non-API functions
                 node.deviceList = devices;
                 node.ready = true;
@@ -91,7 +88,7 @@ module.exports = function(RED) {
                 this.debug('%s pending api calls', this.pending);
             }
 
-            this.promise = (this.promise || Promise.resolve()).reflect().then(function() {
+            this.promise = (this.promise || Promise.resolve()).reflect().then( function() {
                 node.pending = Math.max(node.pending-1, 0);
 
                 var fritzFunc = fritz[func];
@@ -99,15 +96,15 @@ module.exports = function(RED) {
 
                 node.debug("> %s (%s)", func, JSON.stringify(funcArgs.slice(0,-1)).slice(1,-1));
 
-                return fritzFunc.apply(node, funcArgs).catch(function(error) {
+                return fritzFunc.apply(node, funcArgs).catch( function(error) {
                     if (error.response && error.response.statusCode == 403) {
-                        return node.login().then(function(sid) {
+                        return node.login().then( function(sid) {
                             node.log( "Fritz!Box session renewed");
 
                             funcArgs = [node.sid].concat(args).concat(node.options);
                             return fritzFunc.apply(node, funcArgs);
                         })
-                        .catch(function(error) {
+                        .catch( function(error) {
                             node.error( "Fritz!Box session renewal failed");
                             /* jshint laxbreak:true */
                             throw error === "0000000000000000"
@@ -121,15 +118,15 @@ module.exports = function(RED) {
             })
             .catch( function(error) {
                 node.warn( func + " failed");
-                // node.error( error);
+                node.error( JSON.stringify( error));
                 node.promise = null;
 
                 return Promise.reject( func + " failed");
             });
 
             // debug result
-            this.promise.then( function(res) {
-                node.debug( func, JSON.stringify(res));
+            this.promise.then( function( res) {
+                node.debug( func, JSON.stringify( res));
                 return res;
             });
 
@@ -139,7 +136,7 @@ module.exports = function(RED) {
         /** Obtain a session ID for API calls */
         node.login = function() {
             return fritz.getSessionID(node.credentials.username || "", node.credentials.password, node.options)
-            .then(function(sid) {
+            .then( function(sid) {
                 node.sid = sid;
                 return sid;
             });
@@ -187,7 +184,7 @@ module.exports = function(RED) {
         };
 
         /** Main message handler */
-		node.on('input', function( msg) {
+		    node.on( 'input', function( msg) {
             const device = node.connection.checkDevice( node, msg, fritz.FUNCTION_THERMOSTAT);
             if (!device) return;
 
@@ -219,8 +216,8 @@ module.exports = function(RED) {
                     node.error( "Unknown operation: " + node.config.action);
                     return;
             }
-		});
-
+		    });
+        
         node.connection.statusFlag( node);
     }
 
@@ -235,7 +232,7 @@ module.exports = function(RED) {
         node.connection = RED.nodes.getNode( config.connection);
 
         /** Main message handler */
-		node.on('input', function( msg) {
+		    node.on('input', function( msg) {
             if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_OUTLET)) return;
 
             switch( node.config.action) {
@@ -266,7 +263,7 @@ module.exports = function(RED) {
                     node.error( "Unknown operation: " + node.config.action);
                     return;
             }
-		});
+		    });
 
         node.connection.statusFlag( node);
     }
@@ -283,7 +280,7 @@ module.exports = function(RED) {
         node.config = config;
         node.connection = RED.nodes.getNode( config.connection);
 
-		node.on( 'input', function(msg) {
+		    node.on( 'input', function(msg) {
             if (!node.connection.ready) {
                 node.warn( "Device not ready");
                 return;
@@ -306,7 +303,7 @@ module.exports = function(RED) {
                     node.error( "Unknown operation: " + node.config.action);
                     return;
             }
-		});
+		    });
 
         node.connection.statusFlag( node);
     }

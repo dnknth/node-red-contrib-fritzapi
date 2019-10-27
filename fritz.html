@@ -89,7 +89,7 @@
         required: false
       },
       action: {
-        required: true
+        required: false
       },
     },
     inputs: 1,
@@ -144,6 +144,10 @@
         <span class="property-type">string</span>
       </dt>
       <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+      <dt class="optional">action
+        <span class="property-type">string</span>
+      </dt>
+      <dd> Overwrite action to execute.</dd>
       <dt class="optional">payload
         <span class="property-type">number | any</span>
       </dt>
@@ -173,7 +177,7 @@
         required: false
       },
       action: {
-        required: true
+        required: false
       },
     },
     inputs: 1,
@@ -222,6 +226,10 @@
       <span class="property-type">string</span>
     </dt>
     <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+    <dt class="optional">action
+        <span class="property-type">string</span>
+    </dt>
+    <dd> Overwrite action to execute.</dd>
     <dt class="optional">payload
         <span class="property-type">number | any</span>
       </dt>
@@ -250,7 +258,7 @@
         required: false
       },
       action: {
-        required: true
+        required: false
       },
     },
     inputs: 1,
@@ -288,6 +296,10 @@
   
   <h3>Inputs</h3>
   <dl class="message-properties">
+      <dt class="optional">action
+        <span class="property-type">string</span>
+      </dt>
+      <dd> Overwrite action to execute.</dd>
       <dt class="optional">payload
         <span class="property-type">boolean</span>
       </dt>

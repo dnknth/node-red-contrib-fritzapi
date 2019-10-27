@@ -188,14 +188,16 @@ module.exports = function(RED) {
             const device = node.connection.checkDevice( node, msg, fritz.FUNCTION_THERMOSTAT);
             if (!device) return;
 
-            switch( node.config.action) {
+            const action = msg.action || node.config.action
+
+            switch( action) {
                 case 'getTemperature': // #2
                 case 'getTempTarget':
                 case 'getTempComfort':
                 case 'getTempNight':
                 case 'getBatteryCharge':
                 case 'getWindowOpen':
-                    node.connection.fritz( node.config.action, msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
                     });
@@ -213,7 +215,7 @@ module.exports = function(RED) {
                     node.setTempTo( msg, "getTempNight", 0);
                     break;
                 default:
-                    node.error( "Unknown operation: " + node.config.action);
+                    node.error( "Unknown operation: " + action);
                     return;
             }
 		    });
@@ -235,7 +237,9 @@ module.exports = function(RED) {
 		    node.on('input', function( msg) {
             if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_OUTLET)) return;
 
-            switch( node.config.action) {
+            const action = msg.action || node.config.action
+
+            switch( action) {
                 case 'setSwitchState':
                     const cmd = msg.payload ? "setSwitchOn" : "setSwitchOff";
                     node.connection.fritz( "getSwitchState", msg.ain || msg.topic).then( function( t) {
@@ -254,13 +258,13 @@ module.exports = function(RED) {
                 case 'getSwitchPower':
                 case 'getSwitchEnergy':
                 case 'getSwitchPresence':
-                    node.connection.fritz( node.config.action, msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
                     });
                     break;
                 default:
-                    node.error( "Unknown operation: " + node.config.action);
+                    node.error( "Unknown operation: " + action);
                     return;
             }
 		    });
@@ -286,7 +290,9 @@ module.exports = function(RED) {
                 return;
             }
 
-            switch( node.config.action) {
+            const action = msg.action || node.config.action
+
+            switch( action) {
                 case 'getGuestWlan':
                     node.connection.fritz( 'getGuestWlan').then( function( t) {
                         msg.payload = t;
@@ -300,7 +306,7 @@ module.exports = function(RED) {
                     });
                     break;
                 default:
-                    node.error( "Unknown operation: " + node.config.action);
+                    node.error( "Unknown operation: " + action);
                     return;
             }
 		    });

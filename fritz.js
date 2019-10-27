@@ -215,7 +215,7 @@ module.exports = function(RED) {
                     node.setTempTo( msg, "getTempNight", 0);
                     break;
                 default:
-                    node.error( "Unknown operation: " + action);
+                    node.error( "Unknown action: " + (action || '-undefined-'));
                     return;
             }
 		    });
@@ -264,7 +264,7 @@ module.exports = function(RED) {
                     });
                     break;
                 default:
-                    node.error( "Unknown operation: " + action);
+                    node.error( "Unknown action: " + (action || '-undefined-'));
                     return;
             }
 		    });
@@ -306,7 +306,7 @@ module.exports = function(RED) {
                     });
                     break;
                 default:
-                    node.error( "Unknown operation: " + action);
+                    node.error( "Unknown action: " + (action || '-undefined-'));
                     return;
             }
 		    });

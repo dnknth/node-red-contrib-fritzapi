@@ -27,6 +27,7 @@ enabled on the FRITZ!Box.
 The packages contains `thermostat`, `switch` and `guest wifi` nodes under the `advanced` section in the palette.
 Thermostats and switches expect an actuator identification number `AIN` as `ain` or `topic` on the input message.
 If both `ain` and `topic` are provided, `ain` has precedence.
+Nodes have an (optional) pre-set action. It can be overriden with the `action` attribute on input messages. See [fritzapi](https://www.npmjs.com/package/fritzapi) for a list of supported action names.
 
 Any payload is accepted for information retrieval. For switch and wifi updates, send the desired boolean value
 (on or off). For thermostat updates, send the target temperature or adjustment in degrees Celsius.

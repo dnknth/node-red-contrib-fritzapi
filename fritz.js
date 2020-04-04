@@ -236,6 +236,7 @@ module.exports = function(RED) {
                 case 'getWindowOpen':
                 case 'getDevice':
                 case 'getPresence':
+                case 'getBasicDeviceStats':
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);

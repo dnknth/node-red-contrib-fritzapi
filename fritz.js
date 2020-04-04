@@ -50,6 +50,11 @@ module.exports = function(RED) {
             });
         };
 
+        /** Is node ready to use? */
+        node.isReady  = function() {
+            return node.ready;
+        };
+
         /** Check whether the AIN of a device is known */
         node.checkDevice = function( othernode, msg, flags) {
             if (!node.ready) {
@@ -183,13 +188,45 @@ module.exports = function(RED) {
             });
         };
 
+        /** Is this action related to a device? */
+        node.isDeviceAction = function( action) {
+            switch( action) {
+                case 'getTemperature':
+                case 'getTempTarget':
+                case 'getTempComfort':
+                case 'getTempNight':
+                case 'getBatteryCharge':
+                case 'getWindowOpen':
+                case 'getDevice':
+                case 'getPresence':
+                case 'setTempTarget':
+                case 'adjustTempTarget':
+                case 'setTempComfort':
+                case 'setTempNight':
+                    return true;
+                default:
+                    return false;
+            }
+        };
+
         /** Main message handler */
-		    node.on( 'input', function( msg) {
-            const device = node.connection.checkDevice( node, msg, fritz.FUNCTION_THERMOSTAT);
-            if (!device) return;
-
+		node.on( 'input', function msgHandler( msg) {
+            // Get action
             const action = msg.action || node.config.action
-
+            // Wait for node being ready
+            if (!node.connection.isReady()) {
+                setTimeout( function () {
+                    //node.log( "Wait till node is ready for action '" + action + "'");
+                    msgHandler( msg);
+                }, 1000);
+                return;
+            }
+            // Check device if it is a device action
+            if (node.isDeviceAction(action)) {
+                const device = node.connection.checkDevice( node, msg, fritz.FUNCTION_THERMOSTAT);
+                if (!device) return;
+            }
+            // Handle action
             switch( action) {
                 case 'getTemperature': // #2
                 case 'getTempTarget':
@@ -197,6 +234,8 @@ module.exports = function(RED) {
                 case 'getTempNight':
                 case 'getBatteryCharge':
                 case 'getWindowOpen':
+                case 'getDevice':
+                case 'getPresence':
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
@@ -214,6 +253,23 @@ module.exports = function(RED) {
                 case 'setTempNight':
                     node.setTempTo( msg, "getTempNight", 0);
                     break;
+
+                case 'getDeviceListFiltered':
+                    break;
+    
+                case 'applyTemplate':
+                    break;
+       
+                case 'getOSVersion':
+                case 'getDeviceList':
+                case 'getTemplateList':
+                case 'getThermostatList':
+                    node.connection.fritz( action).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+
                 default:
                     node.error( "Unknown action: " + (action || '-undefined-'));
                     return;

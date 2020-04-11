@@ -165,11 +165,11 @@ module.exports = function(RED) {
         node.config = config;
         node.connection = RED.nodes.getNode( config.connection);
 
-        /** Set the target temperature to the value of msg.payload in °C */
-        node.setTemp = function( msg) {
-            node.connection.fritz( "getTempTarget", msg.ain || msg.topic).then( function( t) {
+        /** Set the target, comfort or night7 temperature to the value of msg.payload in °C */
+        node.setTemp = function( msg, setAction, getAction) {
+            node.connection.fritz( getAction, msg.ain || msg.topic).then( function( t) {
                 if (msg.payload && t != msg.payload) {
-                    node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
+                    node.connection.fritz( setAction, msg.ain || msg.topic, msg.payload).then( function() {
                         node.log( `Set ${msg.ain || msg.topic} from ${t} to ${msg.payload} °C`);
                         node.send( msg);
                     });
@@ -237,34 +237,51 @@ module.exports = function(RED) {
                 case 'getDevice':
                 case 'getPresence':
                 case 'getBasicDeviceStats':
+                    // Tested successfully, except 'getPresence' which returns false when it should return true -> problem in fritzapi implementation
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
                     });
                     break;
                 case 'setTempTarget':
-                    node.setTemp( msg);
+                    // Tested successfully
+                    node.setTemp( msg, 'setTempTarget', 'getTempTarget');
                     break;
                 case 'adjustTempTarget':
+                    // Tested successfully
                     node.setTempTo( msg, "getTempTarget", +msg.payload);
                     break;
-                case 'setTempComfort':
-                    node.setTempTo( msg, "getTempComfort", 0);
-                    break;
-                case 'setTempNight':
-                    node.setTempTo( msg, "getTempNight", 0);
-                    break;
+                //case 'setTempComfort':
+                //    // @fixme: doesn't work
+                //    //node.setTempTo( msg, "getTempComfort", 0);
+                //    node.setTemp( msg, 'setTempComfort', 'getTempComfort');
+                //    break;
+                //case 'setTempNight':
+                //    // @fixme: doesn't work
+                //    //node.setTempTo( msg, "getTempNight", 0);
+                //    node.setTemp( msg, 'setTempNight', 'getTempNight');
+                //    break;
 
-                case 'getDeviceListFiltered':
-                    break;
+                //case 'getDeviceListFiltered':
+                //    node.connection.fritz( action, filter).then( function( t) {
+                //        msg.payload = t;
+                //        node.send( msg);
+                //    });
+                //    break;
     
                 case 'applyTemplate':
-                    break;
+                    // Tested successfully
+                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                     break;
        
                 case 'getOSVersion':
                 case 'getDeviceList':
                 case 'getTemplateList':
                 case 'getThermostatList':
+                    // Tested successfully
                     node.connection.fritz( action).then( function( t) {
                         msg.payload = t;
                         node.send( msg);

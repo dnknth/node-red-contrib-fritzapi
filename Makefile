@@ -7,7 +7,7 @@ debug: sync
 	ssh -t $(HOST) su -l $(USER) -c '"/usr/bin/node-red --max_old_space_size=256 -v"'
 
 sync:
-	rsync *.* $(HOST):/usr/lib/node_modules/node-red-contrib-fritzapi
+	rsync *.* $(HOST):/usr/lib/node_modules/$(NAME)
 
 restart:
 	ssh -t $(HOST) /etc/init.d/node-red restart

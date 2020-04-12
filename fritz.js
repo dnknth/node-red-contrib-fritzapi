@@ -165,11 +165,11 @@ module.exports = function(RED) {
         node.config = config;
         node.connection = RED.nodes.getNode( config.connection);
 
-        /** Set the target, comfort or night7 temperature to the value of msg.payload in °C */
-        node.setTemp = function( msg, setAction, getAction) {
-            node.connection.fritz( getAction, msg.ain || msg.topic).then( function( t) {
-                if (msg.payload && t != msg.payload) {
-                    node.connection.fritz( setAction, msg.ain || msg.topic, msg.payload).then( function() {
+        /** Set the target, comfort or night temperature to the value of msg.payload in °C */
+        node.setTemp = function( msg) {
+            node.connection.fritz( "getTempTarget", msg.ain || msg.topic).then( function( t) {
+                if (!msg.payload || t != msg.payload) {
+                    node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
                         node.log( `Set ${msg.ain || msg.topic} from ${t} to ${msg.payload} °C`);
                         node.send( msg);
                     });
@@ -241,26 +241,29 @@ module.exports = function(RED) {
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
+                    }).catch( function( error) {
+                        node.error( error);
                     });
+        
                     break;
                 case 'setTempTarget':
                     // Tested successfully
-                    node.setTemp( msg, 'setTempTarget', 'getTempTarget');
+                    node.setTemp( msg);
                     break;
                 case 'adjustTempTarget':
                     // Tested successfully
-                    node.setTempTo( msg, "getTempTarget", +msg.payload);
+                    if (msg.payload && +msg.payload) {
+                        node.setTempTo( msg, "getTempTarget", +msg.payload);
+                    }
                     break;
-                //case 'setTempComfort':
-                //    // @fixme: doesn't work
-                //    //node.setTempTo( msg, "getTempComfort", 0);
-                //    node.setTemp( msg, 'setTempComfort', 'getTempComfort');
-                //    break;
-                //case 'setTempNight':
-                //    // @fixme: doesn't work
-                //    //node.setTempTo( msg, "getTempNight", 0);
-                //    node.setTemp( msg, 'setTempNight', 'getTempNight');
-                //    break;
+                case 'setTempComfort':
+                    // Tested successfully
+                    node.setTempTo( msg, "getTempComfort", 0);
+                    break;
+                case 'setTempNight':
+                    // Tested successfully
+                    node.setTempTo( msg, "getTempNight", 0);
+                    break;
 
                 //case 'getDeviceListFiltered':
                 //    node.connection.fritz( action, filter).then( function( t) {
@@ -275,7 +278,7 @@ module.exports = function(RED) {
                         msg.payload = t;
                         node.send( msg);
                     });
-                     break;
+                    break;
        
                 case 'getOSVersion':
                 case 'getDeviceList':

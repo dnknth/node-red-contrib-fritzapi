@@ -237,7 +237,8 @@ module.exports = function(RED) {
                 case 'getDevice':
                 case 'getPresence':
                 case 'getBasicDeviceStats':
-                    // Tested successfully, except 'getPresence' which returns false when it should return true -> problem in fritzapi implementation
+                    // Tested successfully, except 'getPresence' which returns false when it should return true
+                    // -> problem in fritzapi implementation
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);
@@ -256,22 +257,13 @@ module.exports = function(RED) {
                         node.setTempTo( msg, "getTempTarget", +msg.payload);
                     }
                     break;
-                case 'setTempComfort':
-                    // Tested successfully
+                case 'setTempComfort': // Set the temperature to day mode.
                     node.setTempTo( msg, "getTempComfort", 0);
                     break;
-                case 'setTempNight':
-                    // Tested successfully
+                case 'setTempNight': // Set the temperature to night mode.
                     node.setTempTo( msg, "getTempNight", 0);
                     break;
 
-                //case 'getDeviceListFiltered':
-                //    node.connection.fritz( action, filter).then( function( t) {
-                //        msg.payload = t;
-                //        node.send( msg);
-                //    });
-                //    break;
-    
                 case 'applyTemplate':
                     // Tested successfully
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {

@@ -35,6 +35,9 @@ Any payload is accepted for information retrieval. For switch and wifi updates, 
 Temperature and outlet adjustments are only made if the desired state differs from the actual state.
 All updates are logged.
 
+There are two special cases: `setTempComfort` (Set to day temperature) and `setTempNight` (Set to night temperature)
+do not expect a temperature as payload, because they set the *target* temperature to the day / night preset.
+
 All actions output the requested or updated value.
 
 **There is a comprehensive example flow which demonstrates all use cases of the `thermostat` node.**

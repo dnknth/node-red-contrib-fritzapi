@@ -343,6 +343,73 @@ module.exports = function(RED) {
 
     RED.nodes.registerType( "fritz-outlet", Outlet);
 
+    /** Bulbs can be dimmed, color-changed and report list of available blubs */
+    function Bulb( config) {
+        RED.nodes.createNode( this, config);
+        var node = this;
+        node.config = config;
+        node.connection = RED.nodes.getNode( config.connection);
+
+        /** Main message handler */
+            node.on('input', function( msg) {
+            if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_LIGHT)) return;
+
+            const action = msg.action || node.config.action
+
+            switch( action) {
+                case 'setColor':
+                    if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_COLORCONTROL)) return;
+                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload.color || "blue", msg.payload.saturation || 2, msg.payload.duration || 200).then( function() {
+                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send( msg);
+                    });
+                    break;
+
+                case 'setColorTemperature':
+                    if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_COLORCONTROL)) return;
+                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload.color || 4700, msg.payload.duration || 200).then( function() {
+                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send( msg);
+                    });
+                    break;
+                case 'setSimpleOnOff':
+                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload ? "ON" : "OFF").then( function() {
+                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send( msg);
+                    });
+                    break;
+                case 'setLevel':
+                case 'setLevelPercentage':
+                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload).then( function() {
+                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send( msg);
+                    });
+                    break;
+                case 'getDevice':
+                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                case 'getBulbList':
+                case 'getDimmableBulbList':
+                case 'getColorBulbList':
+                    node.connection.fritz( action ).then( function( t) {
+                        msg.payload = t;
+                        node.send( msg);
+                    });
+                    break;
+                default:
+                    node.error( "Unknown action: " + (action || '-undefined-'));
+                    return;
+            }
+            });
+
+        node.connection.statusFlag( node);
+    }
+
+    RED.nodes.registerType( "fritz-bulb", Bulb);
+
 
     /** Guest wifi can be ON or OFF.
      * FIXME: Broken with FRITZ!Box 7590 running OS 7.01

@@ -253,6 +253,128 @@
 </script>
 
 <script type="text/javascript">
+  RED.nodes.registerType( "fritz-bulb", {
+    category: "advanced",
+    paletteLabel: "bulb",
+    color: "#2E90DD",
+    defaults: {
+      connection: {
+        type: "fritz-api",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      action: {
+        required: false
+      },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "power.png",
+
+    label: function () {
+      return this.name || "bulb";
+    },
+
+  });
+</script>
+
+<script type="text/x-red" data-template-name="fritz-bulb">
+  <div class="form-row">
+    <label for="node-input-connection"><i class="fa fa-globe"></i> Connection</label>
+    <input type="text" id="node-input-connection">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+      <label for="node-input-action"><i class="fa fa-power-off"></i> Action</label>
+      <select id="node-input-action" id="node-input-action">
+          <option></option>
+          <option value="getDevice">Get device state</option>
+          <option value="getBulbList">Get bulbs list</option>
+          <option value="getDimmableBulbList">Get dimmable bulbs list</option>
+          <option value="getColorBulbList">Get colored bulbs list</option>
+          <option value="setSimpleOnOff">Set simple on/off</option>
+          <option value="setLevel">Set dimm level</option>
+          <option value="setLevelPercentage">Set dimm level percentage</option>
+          <option value="setColor">Set color</option>
+          <option value="setColorTemperature">Set color temperature</option>
+      </select>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="fritz-bulb">
+  <p>A DECT bulb controlled via a FRITZ!Box.</p>
+  
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>ain
+      <span class="property-type">string</span>
+    </dt>
+    <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+    <dt>topic
+      <span class="property-type">string</span>
+    </dt>
+    <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+    <dt class="optional">action
+        <span class="property-type">string</span>
+    </dt>
+    <dd> Overwrite action to execute.</dd>
+    <dt class="optional">payload
+        <span class="property-type">string | number | any</span>
+      </dt>
+      <dd>None for <code>get*</code>-actions, for <code>set*</code>-actions see below for per-action details.</dd>
+  </dl>
+
+  <h3>Payloads</h3>
+  <dl class="message-properties">
+
+    <dt>setSimpleOnOff
+      <span class="property-type">action</span>
+    </dt>
+    <dd>Payload is <code>true</code> or <code>false</code></dd>
+
+    <dt>setLevel
+      <span class="property-type">action</span>
+    </dt>
+    <dd>Payload is <code>0 - 255</code></dd>
+
+    <dt>setLevelPercentage
+      <span class="property-type">action</span>
+    </dt>
+    <dd>Payload is <code>0 - 100</code></dd>
+
+    <dt>setColor
+      <span class="property-type">action</span>
+    </dt>
+    <dd><ul><li><code>payload.color</code> from a list of:
+    <code>red</code>, <code>orange</code>, <code>yellow</code>, <code>lime</code>, <code>green</code>, <code>turquoise</code>, <code>cyan</code>, <code>lightblue</code>, <code>blue</code> (default), <code>purple</code>, <code>magenta</code>, and <code>pink</code></li>
+    <li><code>payload.saturation</code> from a list of:
+    <code>0</code>, <code>1</code>, and <code>2</code> (default)</li>
+    <li><code>payload.duration</code> transition duration in ms. Default is 200.</li>
+    </ul></dd>
+    <dt>setColorTemperature
+      <span class="property-type">action</span>
+    </dt>
+    <dd><ul><li><code>payload.color</code> from a list of:
+    <code>2700</code>, <code>3000</code>, <code>3400</code>, <code>3800</code>, <code>4200</code>, <code>4700</code> (default), <code>5300</code>, <code>5900</code>, and <code>6500</code>. Other values are adjusted by fritzapi to one of the above values.</li>
+    <li><code>payload.duration</code> transition duration in ms. Default is 200.</li>
+    </ul></dd>
+
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+      <dt>payload <span class="property-type">any</span></dt>
+      <dd>The bulb list content, device state, or reply from the set method.</dd>
+  </dl>
+</script>
+
+<script type="text/javascript">
   RED.nodes.registerType( "fritz-guestwifi", {
     category: "advanced",
     paletteLabel: "guest wifi",

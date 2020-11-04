@@ -327,6 +327,7 @@ module.exports = function(RED) {
                 case 'getSwitchPower':
                 case 'getSwitchEnergy':
                 case 'getSwitchPresence':
+                case 'getTemperature':
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
                         msg.payload = t;
                         node.send( msg);

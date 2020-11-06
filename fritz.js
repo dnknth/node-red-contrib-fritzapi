@@ -323,6 +323,7 @@ module.exports = function(RED) {
                         }
                     });
                     break;
+                case 'setSwitchToggle':
                 case 'getSwitchState':
                 case 'getSwitchPower':
                 case 'getSwitchEnergy':

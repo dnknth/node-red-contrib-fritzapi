@@ -377,6 +377,107 @@
 </script>
 
 <script type="text/javascript">
+  RED.nodes.registerType( "fritz-blind", {
+    category: "advanced",
+    paletteLabel: "blind",
+    color: "#2E90DD",
+    defaults: {
+      connection: {
+        type: "fritz-api",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      action: {
+        required: false
+      },
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "blind.png",
+
+    label: function () {
+      return this.name || "blind";
+    },
+
+  });
+</script>
+
+<script type="text/x-red" data-template-name="fritz-blind">
+  <div class="form-row">
+    <label for="node-input-connection"><i class="fa fa-globe"></i> Connection</label>
+    <input type="text" id="node-input-connection">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+      <label for="node-input-action"><i class="fa fa-power-off"></i> Action</label>
+      <select id="node-input-action" id="node-input-action">
+          <option></option>
+          <option value="getDevice">Get device state</option>
+          <option value="setBlind">Set simple open/close/stop</option>
+          <option value="setLevel">Set blind level</option>
+          <option value="setLevelPercentage">Set blind level percentage</option>
+      </select>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="fritz-blind">
+  <p>A DECT blind controlled via a FRITZ!Box.</p>
+  
+  <h3>Inputs</h3>
+  <dl class="message-properties">
+    <dt>ain
+      <span class="property-type">string</span>
+    </dt>
+    <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+    <dt>topic
+      <span class="property-type">string</span>
+    </dt>
+    <dd> Device identification (AIN). If both <code>ain</code> and <code>topic</code> are provided, <code>ain</code> has precedence.</dd>
+    <dt class="optional">action
+        <span class="property-type">string</span>
+    </dt>
+    <dd> Overwrite action to execute.</dd>
+    <dt class="optional">payload
+        <span class="property-type">string | number | any</span>
+      </dt>
+      <dd>None for <code>get*</code>-actions, for <code>set*</code>-actions see below for per-action details.</dd>
+  </dl>
+
+  <h3>Payloads</h3>
+  <dl class="message-properties">
+
+    <dt>setBlind
+      <span class="property-type">action</span>
+    </dt>
+    <dd>Payload is <code>open</code> <code>close</code> or <code>stop</code></dd>
+
+    <dt>setLevel
+      <span class="property-type">action</span>
+    </dt>
+    <dd>Payload is <code>0 - 255</code></dd>
+
+    <dt>setLevelPercentage
+      <span class="property-type">action</span>
+    </dt>
+    <dd>Payload is <code>0 - 100</code></dd>
+
+  </dl>
+
+  <h3>Output</h3>
+  <dl class="message-properties">
+      <dt>payload <span class="property-type">any</span></dt>
+      <dd>The blind list content, device state, or reply from the set method.</dd>
+  </dl>
+</script>
+
+
+<script type="text/javascript">
   RED.nodes.registerType( "fritz-guestwifi", {
     category: "advanced",
     paletteLabel: "guest wifi",

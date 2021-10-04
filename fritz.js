@@ -240,7 +240,7 @@ module.exports = function(RED) {
                     // Tested successfully, except 'getPresence' which returns false when it should return true
                     // -> problem in fritzapi implementation
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
-                        msg.payload = t;
+                        msg.payload = (+t === 0) ? 0 : (+t || t);
                         node.send( msg);
                     }).catch( function( error) {
                         node.error( error);
@@ -267,7 +267,7 @@ module.exports = function(RED) {
                 case 'applyTemplate':
                     // Tested successfully
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
-                        msg.payload = t;
+                        msg.payload = (+t === 0) ? 0 : (+t || t);
                         node.send( msg);
                     });
                     break;
@@ -278,7 +278,7 @@ module.exports = function(RED) {
                 case 'getThermostatList':
                     // Tested successfully
                     node.connection.fritz( action).then( function( t) {
-                        msg.payload = t;
+                        msg.payload = (+t === 0) ? 0 : (+t || t);
                         node.send( msg);
                     });
                     break;
@@ -330,7 +330,7 @@ module.exports = function(RED) {
                 case 'getSwitchPresence':
                 case 'getTemperature':
                     node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
-                        msg.payload = t;
+                        msg.payload = (+t === 0) ? 0 : (+t || t);
                         node.send( msg);
                     });
                     break;
@@ -427,11 +427,6 @@ module.exports = function(RED) {
 
             switch( action) {
                 case 'setBlind':
-                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload ).then( function() {
-                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
-                        node.send( msg);
-                    });
-                    break;
                 case 'setLevel':
                 case 'setLevelPercentage':
                     node.connection.fritz( action, msg.ain || msg.topic, msg.payload).then( function() {

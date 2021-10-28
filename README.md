@@ -9,13 +9,6 @@ These nodes are a simple Node-RED wrapper for [andig's](https://github.com/andig
 
 The recommended way is to install directly from Node-RED under `Manage palette`.
 
-Manual installation:
-
-```bash
-cd ~/.node-red
-npm install node-red-contrib-fritzapi
-```
-
 ## Configuration
 
 Depending on your FRITZ!Box configuration, a user name may be needed. If your box is configured for password-only
@@ -24,35 +17,41 @@ enabled on the FRITZ!Box.
 
 ## Usage
 
-The packages contains `thermostat`, `switch` and `guest wifi` nodes under the `advanced` section in the palette.
-Thermostats and switches expect an actuator identification number `AIN` as `ain` or `topic` on the input message.
+The packages contains `thermostat`, `switch`, `bulb`, `blind` and `guest wifi` nodes under the `advanced` section in the palette.
+
+Thermostats, switches and blinds expect an actuator identification number `AIN` as `ain` or `topic` on the input message.
+
 If both `ain` and `topic` are provided, `ain` has precedence.
-Nodes have an (optional) pre-set action. It can be overriden with the `action` attribute on input messages. 
+
+Nodes have an (optional) pre-set action. It can be overriden with the `action` attribute on input messages.
 See [fritzapi](https://www.npmjs.com/package/fritzapi) for a list of supported action names.
 
-Any payload is accepted for information retrieval. For switch and wifi updates, send the desired boolean value
-(on or off). For thermostat updates, send the target temperature or adjustment in degrees Celsius.
-Temperature and outlet adjustments are only made if the desired state differs from the actual state.
-All updates are logged.
+Any payload is accepted for information retrieval.
 
-There are two special cases: `setTempComfort` (Set to day temperature) and `setTempNight` (Set to night temperature)
+* For switch and wifi updates, send the desired boolean value
+(on or off).
+* For thermostat updates, send the target temperature or adjustment in degrees Celsius.
+  * There are two special cases: `setTempComfort` (Set to day temperature) and `setTempNight` (Set to night temperature)
 do not expect a temperature as payload, because they set the *target* temperature to the day / night preset.
+  * An [example flow](examples/Fritz%20HTTP%20API%20Example%20Flow.json) demonstrates usage of the `thermostat` node.
+* Bulbs can be set to a given brightness level, color or color temperature. See the node documenation for details.
+* Blinds be set to a desired level, or opened or closed.
+See the node documenation for details.
+
+Adjustments are only made if the desired state differs from the actual state. All updates are logged.
 
 All actions output the requested or updated value.
 
-**There is a comprehensive example flow which demonstrates all use cases of the `thermostat` node.**
+## Troubleshooting
 
-## To Do
+A popular pitfall seems to be that the Fritz!Box UI shows imcomplete AINs for various [bulbs](https://github.com/dnknth/node-red-contrib-fritzapi/issues/27#issuecomment-953936018) and [blinds](https://github.com/dnknth/node-red-contrib-fritzapi/issues/26). If the device does not respond, try appending `-1` to the AIN.
 
-- Switches are not tested, as I do not own any. All feedback appreciated.
-- Guest Wifi control does not seem to work with FRITZ!OS 7.x
+## Still stuck?
+
+Switches, bulbs and blinds were tested by contributors, as I do not own any. All feedback appreciated, but please check the [relevant issues](https://github.com/dnknth/node-red-contrib-fritzapi/issues?q=is%3Aissue+is%3Aclosed) before opening new ones.
 
 ## Credits
 
-- Kudos to [andig](https://github.com/andig) for [fritzapi](https://www.npmjs.com/package/fritzapi).
-- Also, substantial parts of the low-level interface were also written by [andig](https://github.com/andig) for
+Kudos to [andig](https://github.com/andig) for [fritzapi](https://www.npmjs.com/package/fritzapi).
+Also, substantial parts of the low-level interface were also written by [andig](https://github.com/andig) for
 [homebridge-fritz](https://www.npmjs.com/package/homebridge-fritz). Thanks for the wizardry!
-
-## License
-
-[MIT](https://opensource.org/licenses/MIT)

@@ -204,6 +204,7 @@ module.exports = function(RED) {
                 case 'setTempComfort':
                 case 'setTempNight':
                 case 'setWindowOpen':
+                case 'setBoost':
                     return true;
                 default:
                     return false;
@@ -287,6 +288,14 @@ module.exports = function(RED) {
                 case 'setWindowOpen':
                     node.connection.fritz( "setHkrWindowOpen", msg.ain || msg.topic, msg.payload).then( function( t) {
                         node.log( `Set window open for ${msg.ain || msg.topic} for ${msg.payload} seconds`);
+                        msg.payload = (+t === 0) ? 0 : (+t || t);
+                        node.send( msg);
+                    });
+                    break;
+
+                case 'setBoost':
+                    node.connection.fritz( "setHkrBoost", msg.ain || msg.topic, msg.payload).then( function( t) {
+                        node.log( `Set boost for ${msg.ain || msg.topic} for ${msg.payload} seconds`);
                         msg.payload = (+t === 0) ? 0 : (+t || t);
                         node.send( msg);
                     });

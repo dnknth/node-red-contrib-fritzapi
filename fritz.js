@@ -286,17 +286,17 @@ module.exports = function(RED) {
                     break;
 
                 case 'setWindowOpen':
-                    node.connection.fritz( "setHkrWindowOpen", msg.ain || msg.topic, msg.payload).then( function( t) {
-                        node.log( `Set window open for ${msg.ain || msg.topic} for ${msg.payload} seconds`);
-                        msg.payload = (+t === 0) ? 0 : (+t || t);
+                    node.connection.fritz( "setHkrWindowOpen", msg.ain || msg.topic, msg.payload*60).then( function( t) {
+                        node.log( `Set window open for ${msg.ain || msg.topic} for ${msg.payload} minutes`);
+                        msg.payload = (+t === 0) ? 0 : (+t/60 || t);
                         node.send( msg);
                     });
                     break;
 
                 case 'setBoost':
-                    node.connection.fritz( "setHkrBoost", msg.ain || msg.topic, msg.payload).then( function( t) {
-                        node.log( `Set boost for ${msg.ain || msg.topic} for ${msg.payload} seconds`);
-                        msg.payload = (+t === 0) ? 0 : (+t || t);
+                    node.connection.fritz( "setHkrBoost", msg.ain || msg.topic, msg.payload*60).then( function( t) {
+                        node.log( `Set boost for ${msg.ain || msg.topic} for ${msg.payload} minutes`);
+                        msg.payload = (+t === 0) ? 0 : (+t/60 || t);
                         node.send( msg);
                     });
                     break;

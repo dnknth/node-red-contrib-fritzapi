@@ -203,6 +203,7 @@ module.exports = function(RED) {
                 case 'adjustTempTarget':
                 case 'setTempComfort':
                 case 'setTempNight':
+                case 'setWindowOpen':
                     return true;
                 default:
                     return false;
@@ -278,6 +279,14 @@ module.exports = function(RED) {
                 case 'getThermostatList':
                     // Tested successfully
                     node.connection.fritz( action).then( function( t) {
+                        msg.payload = (+t === 0) ? 0 : (+t || t);
+                        node.send( msg);
+                    });
+                    break;
+
+                case 'setWindowOpen':
+                    node.connection.fritz( "setHkrWindowOpen", msg.ain || msg.topic, msg.payload).then( function( t) {
+                        node.log( `Set window open for ${msg.ain || msg.topic} for ${msg.payload} seconds`);
                         msg.payload = (+t === 0) ? 0 : (+t || t);
                         node.send( msg);
                     });

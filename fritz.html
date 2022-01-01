@@ -124,6 +124,8 @@
           <option value="setTempComfort">Adjust the temperature to day level</option>
           <option value="getTempNight">Get night temperature</option>
           <option value="setTempNight">Adjust the temperature to night level</option>
+          <option value="setHkrBoost">Set boost mode for the given number of minutes</option>
+          <option value="setHkrWindowOpen">Set "Window open" mode for the given number of minutes</option>
           <option value="getBatteryCharge">Get battery charge</option>
           <option value="getWindowOpen">Get window open</option>
           <option value="getOSVersion">Get the FritzOS version</option>
@@ -135,6 +137,8 @@
           <option value="applyTemplate">Apply template</option>
           <option value="getThermostatList">Get list of thermostats</option>
           <option value="getBasicDeviceStats">Get basic device stats as XML</option>
+          <option value="setHkrWindowOpen">Set window open</option>
+          <option value="setHkrBoost">Set boost</option>
         </select>
     </div>
       
@@ -160,7 +164,7 @@
       <dt class="optional">payload
         <span class="property-type">number | any</span>
       </dt>
-      <dd>Target or adjustment temperature, or anything for lookup actions.</dd>
+      <dd>Target or adjustment temperature, time offset in minutes, or anything for lookup actions.</dd>
   </dl>
 
   <h3>Output</h3>

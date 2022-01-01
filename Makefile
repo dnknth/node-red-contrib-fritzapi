@@ -4,10 +4,10 @@ NAME = $(shell basename $$PWD)
 
 debug: sync
 	ssh -t $(HOST) systemctl stop node-red
-	ssh -t $(HOST) su -l $(USER) -c '"/usr/local/bin/node-red-pi --max_old_space_size=256 -v"'
+	ssh -t $(HOST) su -l $(USER) -c '"node_modules/.bin/node-red -u ~nodered -v"'
 
 sync:
-	rsync *.* $(HOST):/usr/local/lib/node_modules/$(NAME)
+	rsync -v --modify-window=1 *.* $(USER)@$(HOST):node_modules/$(NAME)
 
 restart:
 	ssh -t $(HOST) systemctl restart node-red

@@ -203,6 +203,8 @@ module.exports = function(RED) {
                 case 'adjustTempTarget':
                 case 'setTempComfort':
                 case 'setTempNight':
+                case 'setHkrWindowOpen':
+                case 'setHkrBoost':
                     return true;
                 default:
                     return false;
@@ -279,6 +281,14 @@ module.exports = function(RED) {
                     // Tested successfully
                     node.connection.fritz( action).then( function( t) {
                         msg.payload = (+t === 0) ? 0 : (+t || t);
+                        node.send( msg);
+                    });
+                    break;
+
+                case 'setHkrWindowOpen':
+                case 'setHkrBoost':
+                    node.connection.fritz( action, msg.ain || msg.topic, +msg.payload * 60).then( function( t) {
+                        msg.payload = (+t === 0) ? 0 : (+t / 60 || t);
                         node.send( msg);
                     });
                     break;

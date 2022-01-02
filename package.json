@@ -1,17 +1,20 @@
 {
   "name": "node-red-contrib-fritzapi",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "description": "Home automation node for Fritz!Box, Fritz!DECT and FRITZ!Powerline devices.",
   "dependencies": {
-    "bluebird": "^3.5.0",
-    "fritzapi": "^0.13.0"
+    "bluebird": "^3",
+    "fritzapi": "^0.13"
   },
   "engines": {
     "node": ">=5.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dnknth/node-red-contrib-fritzapi.git"
+    "url": "git+https://github.com/dnknth/node-red-contrib-fritzapi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dnknth/node-red-contrib-fritzapi/issues"
   },
   "license": "MIT",
   "keywords": [
@@ -24,6 +27,6 @@
     }
   },
   "author": {
-    "name": "Daniel Knauth"
+    "name": "dnknth"
   }
 }

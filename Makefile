@@ -1,16 +1,18 @@
-HOST = home
-USER = nodered
-NAME = $(shell basename $$PWD)
+.PHONY: debug install clean tidy
 
-debug: sync
-	ssh -t $(HOST) systemctl stop node-red
-	ssh -t $(HOST) su -l $(USER) -c '"node_modules/.bin/node-red -u ~nodered -v"'
+debug: install
+	which node-red || $(MAKE) -B install
+	node-red
 
-sync:
-	rsync -v --modify-window=1 *.* $(USER)@$(HOST):node_modules/$(NAME)
+install: /usr/local/lib/node_modules
 
-restart:
-	ssh -t $(HOST) systemctl restart node-red
-
+/usr/local/lib/node_modules: package.json
+	npm install
+	npm install -g . node-red
+	touch $@
+	
 clean:
-	rm -rf node_modules
+	rm -rf /usr/local/lib/node_modules/node-red*
+
+tidy: clean
+	rm -rf $(HOME)/.node-red

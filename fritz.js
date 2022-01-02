@@ -1,14 +1,14 @@
-var fritz = require( "fritzapi"),
-    Promise = require( "bluebird");
+var fritz = require("fritzapi"),
+    Promise = require("bluebird");
 
 module.exports = function(RED) {
 
     /** Connection information for the FRITZ!Box */
-	function Fritzbox( config) {
-  		 RED.nodes.createNode( this, config);
+	function Fritzbox(config) {
+  		 RED.nodes.createNode(this, config);
   		 var node = this;
        
-       if (! /^https?:\/\//.test( config.host)) {
+       if (! /^https?:\/\//.test(config.host)) {
             config.host = "http://" + config.host;
         }
     		node.options = {
@@ -19,33 +19,33 @@ module.exports = function(RED) {
         /** Login to the box and retrieve device list */
         node.init = function() {
             node.deviceList = [];
-            node.login().then( function() {
+            node.login().then(function() {
                 node.updateDeviceList();
             })
-            .catch( function(error) {
-                node.error( error);
+            .catch(function(error) {
+                node.error(error);
             });
         };
 
         /** Show a status indicator on actuator nodes */
-        node.statusFlag = function( othernode) {
-            node.login().then( function() {
+        node.statusFlag = function(othernode) {
+            node.login().then(function() {
                 othernode.status({fill: "green", shape: "dot", text: "connected"});
             })
-            .catch( function(error) {
+            .catch(function(error) {
                 othernode.status({fill: "red", shape: "ring", text: "login failed"});
             });
         };
 
         /** Query smart home devices from the FRITZ!Box and log them */
         node.updateDeviceList = function() {
-            node.log( "Updating devices");
-            return node.fritz("getDeviceList").then( function(devices) {
+            node.log("Updating devices");
+            return node.fritz("getDeviceList").then(function(devices) {
                 // cache list of devices in options for reuse by non-API functions
                 node.deviceList = devices;
                 node.ready = true;
-                devices.forEach( function(device) {
-                    node.log( `Found: ${device.identifier} (${device.name})`);
+                devices.forEach(function(device) {
+                    node.log(`Found: ${device.identifier} (${device.name})`);
                 });
             });
         };
@@ -56,29 +56,29 @@ module.exports = function(RED) {
         };
 
         /** Check whether the AIN of a device is known */
-        node.checkDevice = function( othernode, msg, flags) {
+        node.checkDevice = function(othernode, msg, flags) {
             if (!node.ready) {
-                node.warn( "Device not ready");
+                node.warn("Device not ready");
                 return;
             }
 
             const ain = msg.ain || msg.topic;
-            const device = node.deviceList.find( function( device) {
+            const device = node.deviceList.find(function(device) {
                 return device.identifier.replace(/\s/g, '') == ain;
             });
             if (device) return device;
 
             // Not found => log names and AINs of all devices with given feature flags
-            othernode.warn( "unknown device: " + ain);
+            othernode.warn("unknown device: " + ain);
 
             if (node.deviceList.length > 0) {
                 let res = {};
-                node.deviceList.forEach( function( device) {
+                node.deviceList.forEach(function(device) {
                     if (((+device.functionbitmask) & flags) == flags) {
                         res[ device.name] = device.identifier;
                     }
                 });
-                othernode.warn( { 'Valid devices' : res});
+                othernode.warn({ 'Valid devices' : res});
             }
         };
 
@@ -93,7 +93,7 @@ module.exports = function(RED) {
                 this.debug('%s pending api calls', this.pending);
             }
 
-            this.promise = (this.promise || Promise.resolve()).reflect().then( function() {
+            this.promise = (this.promise || Promise.resolve()).reflect().then(function() {
                 node.pending = Math.max(node.pending-1, 0);
 
                 var fritzFunc = fritz[func];
@@ -101,16 +101,16 @@ module.exports = function(RED) {
 
                 node.debug("> %s (%s)", func, JSON.stringify(funcArgs.slice(0,-1)).slice(1,-1));
 
-                return fritzFunc.apply(node, funcArgs).catch( function(error) {
+                return fritzFunc.apply(node, funcArgs).catch(function(error) {
                     if (error.response && error.response.statusCode == 403) {
-                        return node.login().then( function(sid) {
-                            node.log( "Fritz!Box session renewed");
+                        return node.login().then(function(sid) {
+                            node.log("Fritz!Box session renewed");
 
                             funcArgs = [node.sid].concat(args).concat(node.options);
                             return fritzFunc.apply(node, funcArgs);
                         })
-                        .catch( function(error) {
-                            node.error( "Fritz!Box session renewal failed");
+                        .catch(function(error) {
+                            node.error("Fritz!Box session renewal failed");
                             /* jshint laxbreak:true */
                             throw error === "0000000000000000"
                                 ? "Invalid session id"
@@ -121,17 +121,17 @@ module.exports = function(RED) {
                     throw error;
                 });
             })
-            .catch( function(error) {
-                node.warn( func + " failed");
-                node.error( JSON.stringify( error));
+            .catch(function(error) {
+                node.warn(func + " failed");
+                node.error(JSON.stringify(error));
                 node.promise = null;
 
-                return Promise.reject( func + " failed");
+                return Promise.reject(func + " failed");
             });
 
             // debug result
-            this.promise.then( function( res) {
-                node.debug( func, JSON.stringify( res));
+            this.promise.then(function(res) {
+                node.debug(func, JSON.stringify(res));
                 return res;
             });
 
@@ -141,7 +141,7 @@ module.exports = function(RED) {
         /** Obtain a session ID for API calls */
         node.login = function() {
             return fritz.getSessionID(node.credentials.username || "", node.credentials.password, node.options)
-            .then( function(sid) {
+            .then(function(sid) {
                 node.sid = sid;
                 return sid;
             });
@@ -159,38 +159,38 @@ module.exports = function(RED) {
 
 
     /** Thermostats have a temperatur sensor, target temparature, and day / night presets */
-	function Thermostat( config) {
-		RED.nodes.createNode( this, config);
+	function Thermostat(config) {
+		RED.nodes.createNode(this, config);
         var node = this;
         node.config = config;
-        node.connection = RED.nodes.getNode( config.connection);
+        node.connection = RED.nodes.getNode(config.connection);
 
         /** Set the target, comfort or night temperature to the value of msg.payload in °C */
-        node.setTemp = function( msg) {
-            node.connection.fritz( "getTempTarget", msg.ain || msg.topic).then( function( t) {
+        node.setTemp = function(msg) {
+            node.connection.fritz("getTempTarget", msg.ain || msg.topic).then(function(t) {
                 if (!msg.payload || t != msg.payload) {
-                    node.connection.fritz( "setTempTarget", msg.ain || msg.topic, msg.payload).then( function() {
-                        node.log( `Set ${msg.ain || msg.topic} from ${t} to ${msg.payload} °C`);
-                        node.send( msg);
+                    node.connection.fritz("setTempTarget", msg.ain || msg.topic, msg.payload).then(function() {
+                        node.log(`Set ${msg.ain || msg.topic} from ${t} to ${msg.payload} °C`);
+                        node.send(msg);
                     });
                 }
                 else {
-                    node.send( msg);
+                    node.send(msg);
                 }
             });
         };
 
         /** Set the target temperature to a predefined setting, adjusting by an offset value in °C */
-        node.setTempTo = function( msg, setting, offset) {
-            node.connection.fritz( setting, msg.ain || msg.topic).then( function( t) {
+        node.setTempTo = function(msg, setting, offset) {
+            node.connection.fritz(setting, msg.ain || msg.topic).then(function(t) {
                 msg.payload = +t + offset;
-                node.setTemp( msg);
+                node.setTemp(msg);
             });
         };
 
         /** Is this action related to a device? */
-        node.isDeviceAction = function( action) {
-            switch( action) {
+        node.isDeviceAction = function(action) {
+            switch(action) {
                 case 'getTemperature':
                 case 'getTempTarget':
                 case 'getTempComfort':
@@ -212,24 +212,24 @@ module.exports = function(RED) {
         };
 
         /** Main message handler */
-		node.on( 'input', function msgHandler( msg) {
+		node.on('input', function msgHandler(msg) {
             // Get action
             const action = msg.action || node.config.action
             // Wait for node being ready
             if (!node.connection.isReady()) {
-                setTimeout( function () {
-                    //node.log( "Wait till node is ready for action '" + action + "'");
-                    msgHandler( msg);
+                setTimeout(function () {
+                    //node.log("Wait till node is ready for action '" + action + "'");
+                    msgHandler(msg);
                 }, 1000);
                 return;
             }
             // Check device if it is a device action
             if (node.isDeviceAction(action)) {
-                const device = node.connection.checkDevice( node, msg, fritz.FUNCTION_THERMOSTAT);
+                const device = node.connection.checkDevice(node, msg, fritz.FUNCTION_THERMOSTAT);
                 if (!device) return;
             }
             // Handle action
-            switch( action) {
+            switch(action) {
                 case 'getTemperature': // #2
                 case 'getTempTarget':
                 case 'getTempComfort':
@@ -241,36 +241,36 @@ module.exports = function(RED) {
                 case 'getBasicDeviceStats':
                     // Tested successfully, except 'getPresence' which returns false when it should return true
                     // -> problem in fritzapi implementation
-                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz(action, msg.ain || msg.topic).then(function(t) {
                         msg.payload = (+t === 0) ? 0 : (+t || t);
-                        node.send( msg);
-                    }).catch( function( error) {
-                        node.error( error);
+                        node.send(msg);
+                    }).catch(function(error) {
+                        node.error(error);
                     });
         
                     break;
                 case 'setTempTarget':
                     // Tested successfully
-                    node.setTemp( msg);
+                    node.setTemp(msg);
                     break;
                 case 'adjustTempTarget':
                     // Tested successfully
                     if (msg.payload && +msg.payload) {
-                        node.setTempTo( msg, "getTempTarget", +msg.payload);
+                        node.setTempTo(msg, "getTempTarget", +msg.payload);
                     }
                     break;
                 case 'setTempComfort': // Set the temperature to day mode.
-                    node.setTempTo( msg, "getTempComfort", 0);
+                    node.setTempTo(msg, "getTempComfort", 0);
                     break;
                 case 'setTempNight': // Set the temperature to night mode.
-                    node.setTempTo( msg, "getTempNight", 0);
+                    node.setTempTo(msg, "getTempNight", 0);
                     break;
 
                 case 'applyTemplate':
                     // Tested successfully
-                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz(action, msg.ain || msg.topic).then(function(t) {
                         msg.payload = (+t === 0) ? 0 : (+t || t);
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
        
@@ -279,57 +279,57 @@ module.exports = function(RED) {
                 case 'getTemplateList':
                 case 'getThermostatList':
                     // Tested successfully
-                    node.connection.fritz( action).then( function( t) {
+                    node.connection.fritz(action).then(function(t) {
                         msg.payload = (+t === 0) ? 0 : (+t || t);
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
 
                 case 'setHkrWindowOpen':
                 case 'setHkrBoost':
-                    node.connection.fritz( action, msg.ain || msg.topic, +msg.payload * 60).then( function( t) {
+                    node.connection.fritz(action, msg.ain || msg.topic, +msg.payload * 60).then(function(t) {
                         msg.payload = (+t === 0) ? 0 : (+t / 60 || t);
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
 
                 default:
-                    node.error( "Unknown action: " + (action || '-undefined-'));
+                    node.error("Unknown action: " + (action || '-undefined-'));
                     return;
             }
 		    });
         
-        node.connection.statusFlag( node);
+        node.connection.statusFlag(node);
     }
 
-    RED.nodes.registerType( "fritz-thermostat", Thermostat);
+    RED.nodes.registerType("fritz-thermostat", Thermostat);
 
 
     /** Swiches have on' and 'off' states, and can report technical values */
-	function Outlet( config) {
-		RED.nodes.createNode( this, config);
+	function Outlet(config) {
+		RED.nodes.createNode(this, config);
         var node = this;
         node.config = config;
-        node.connection = RED.nodes.getNode( config.connection);
+        node.connection = RED.nodes.getNode(config.connection);
 
         /** Main message handler */
-		    node.on('input', function( msg) {
-            if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_OUTLET)) return;
+		    node.on('input', function(msg) {
+            if (!node.connection.checkDevice(node, msg, fritz.FUNCTION_OUTLET)) return;
 
             const action = msg.action || node.config.action
 
-            switch( action) {
+            switch(action) {
                 case 'setSwitchState':
                     const cmd = msg.payload ? "setSwitchOn" : "setSwitchOff";
-                    node.connection.fritz( "getSwitchState", msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz("getSwitchState", msg.ain || msg.topic).then(function(t) {
                         if (t != msg.payload) {
-                            node.connection.fritz( cmd, msg.ain || msg.topic).then( function() {
-                                node.log( `${msg.ain || msg.topic} switched ${msg.payload ? 'on' : 'off'}`);
-                                node.send( msg);
+                            node.connection.fritz(cmd, msg.ain || msg.topic).then(function() {
+                                node.log(`${msg.ain || msg.topic} switched ${msg.payload ? 'on' : 'off'}`);
+                                node.send(msg);
                             });
                         }
                         else {
-                            node.send( msg);
+                            node.send(msg);
                         }
                     });
                     break;
@@ -339,167 +339,167 @@ module.exports = function(RED) {
                 case 'getSwitchEnergy':
                 case 'getSwitchPresence':
                 case 'getTemperature':
-                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz(action, msg.ain || msg.topic).then(function(t) {
                         msg.payload = (+t === 0) ? 0 : (+t || t);
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
                 default:
-                    node.error( "Unknown action: " + (action || '-undefined-'));
+                    node.error("Unknown action: " + (action || '-undefined-'));
                     return;
             }
 		    });
 
-        node.connection.statusFlag( node);
+        node.connection.statusFlag(node);
     }
 
-    RED.nodes.registerType( "fritz-outlet", Outlet);
+    RED.nodes.registerType("fritz-outlet", Outlet);
 
     /** Bulbs can be dimmed, color-changed and report list of available blubs */
-    function Bulb( config) {
-        RED.nodes.createNode( this, config);
+    function Bulb(config) {
+        RED.nodes.createNode(this, config);
         var node = this;
         node.config = config;
-        node.connection = RED.nodes.getNode( config.connection);
+        node.connection = RED.nodes.getNode(config.connection);
 
         /** Main message handler */
-            node.on('input', function( msg) {
-            if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_LIGHT)) return;
+            node.on('input', function(msg) {
+            if (!node.connection.checkDevice(node, msg, fritz.FUNCTION_LIGHT)) return;
 
             const action = msg.action || node.config.action
 
-            switch( action) {
+            switch(action) {
                 case 'setColor':
-                    if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_COLORCONTROL)) return;
-                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload.color || "blue", msg.payload.saturation || 2, msg.payload.duration || 200).then( function() {
-                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
-                        node.send( msg);
+                    if (!node.connection.checkDevice(node, msg, fritz.FUNCTION_COLORCONTROL)) return;
+                    node.connection.fritz(action, msg.ain || msg.topic, msg.payload.color || "blue", msg.payload.saturation || 2, msg.payload.duration || 200).then(function() {
+                        node.log(`${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send(msg);
                     });
                     break;
 
                 case 'setColorTemperature':
-                    if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_COLORCONTROL)) return;
-                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload.color || 4700, msg.payload.duration || 200).then( function() {
-                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
-                        node.send( msg);
+                    if (!node.connection.checkDevice(node, msg, fritz.FUNCTION_COLORCONTROL)) return;
+                    node.connection.fritz(action, msg.ain || msg.topic, msg.payload.color || 4700, msg.payload.duration || 200).then(function() {
+                        node.log(`${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send(msg);
                     });
                     break;
                 case 'setSimpleOnOff':
-                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload ? "ON" : "OFF").then( function() {
-                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
-                        node.send( msg);
+                    node.connection.fritz(action, msg.ain || msg.topic, msg.payload ? "ON" : "OFF").then(function() {
+                        node.log(`${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send(msg);
                     });
                     break;
                 case 'setLevel':
                 case 'setLevelPercentage':
-                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload).then( function() {
-                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
-                        node.send( msg);
+                    node.connection.fritz(action, msg.ain || msg.topic, msg.payload).then(function() {
+                        node.log(`${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send(msg);
                     });
                     break;
                 case 'getDevice':
-                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz(action, msg.ain || msg.topic).then(function(t) {
                         msg.payload = t;
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
                 case 'getBulbList':
                 case 'getDimmableBulbList':
                 case 'getColorBulbList':
-                    node.connection.fritz( action ).then( function( t) {
+                    node.connection.fritz(action).then(function(t) {
                         msg.payload = t;
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
                 default:
-                    node.error( "Unknown action: " + (action || '-undefined-'));
+                    node.error("Unknown action: " + (action || '-undefined-'));
                     return;
             }
             });
 
-        node.connection.statusFlag( node);
+        node.connection.statusFlag(node);
     }
 
-    RED.nodes.registerType( "fritz-bulb", Bulb);
+    RED.nodes.registerType("fritz-bulb", Bulb);
 
     /** Blinds can be leveled, open/close/stop */
-    function Blind( config) {
-        RED.nodes.createNode( this, config);
+    function Blind(config) {
+        RED.nodes.createNode(this, config);
         var node = this;
         node.config = config;
-        node.connection = RED.nodes.getNode( config.connection);
+        node.connection = RED.nodes.getNode(config.connection);
 
         /** Main message handler */
-            node.on('input', function( msg) {
-            if (!node.connection.checkDevice( node, msg, fritz.FUNCTION_LIGHT)) return;
+            node.on('input', function(msg) {
+            if (!node.connection.checkDevice(node, msg, fritz.FUNCTION_LIGHT)) return;
 
             const action = msg.action || node.config.action
 
-            switch( action) {
+            switch(action) {
                 case 'setBlind':
                 case 'setLevel':
                 case 'setLevelPercentage':
-                    node.connection.fritz( action, msg.ain || msg.topic, msg.payload).then( function() {
-                        node.log( `${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
-                        node.send( msg);
+                    node.connection.fritz(action, msg.ain || msg.topic, msg.payload).then(function() {
+                        node.log(`${msg.ain || msg.topic} triggered ${action} with value ${msg.payload}`);
+                        node.send(msg);
                     });
                     break;
                 case 'getDevice':
-                    node.connection.fritz( action, msg.ain || msg.topic).then( function( t) {
+                    node.connection.fritz(action, msg.ain || msg.topic).then(function(t) {
                         msg.payload = t;
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
                 default:
-                    node.error( "Unknown action: " + (action || '-undefined-'));
+                    node.error("Unknown action: " + (action || '-undefined-'));
                     return;
             }
             });
 
-        node.connection.statusFlag( node);
+        node.connection.statusFlag(node);
     }
 
-    RED.nodes.registerType( "fritz-blind", Blind);
+    RED.nodes.registerType("fritz-blind", Blind);
 
 
     /** Guest wifi can be ON or OFF.
      * FIXME: Broken with FRITZ!Box 7590 running OS 7.01
      */
-	function GuestWifi( config) {
-		RED.nodes.createNode( this, config);
+	function GuestWifi(config) {
+		RED.nodes.createNode(this, config);
         var node = this;
         node.config = config;
-        node.connection = RED.nodes.getNode( config.connection);
+        node.connection = RED.nodes.getNode(config.connection);
 
-		    node.on( 'input', function(msg) {
+		    node.on('input', function(msg) {
             if (!node.connection.ready) {
-                node.warn( "Device not ready");
+                node.warn("Device not ready");
                 return;
             }
 
             const action = msg.action || node.config.action
 
-            switch( action) {
+            switch(action) {
                 case 'getGuestWlan':
-                    node.connection.fritz( 'getGuestWlan').then( function( t) {
+                    node.connection.fritz('getGuestWlan').then(function(t) {
                         msg.payload = t;
-                        node.send( msg);
+                        node.send(msg);
                     });
                     break;
                 case 'setGuestWlan':
-                    node.connection.fritz( 'setGuestWlan', msg.payload).then( function() {
-                        node.log( `${msg.payload ? 'Enabled' : 'Disabled'} guest Wifi`);
-                        node.send( msg);
+                    node.connection.fritz('setGuestWlan', msg.payload).then(function() {
+                        node.log(`${msg.payload ? 'Enabled' : 'Disabled'} guest Wifi`);
+                        node.send(msg);
                     });
                     break;
                 default:
-                    node.error( "Unknown action: " + (action || '-undefined-'));
+                    node.error("Unknown action: " + (action || '-undefined-'));
                     return;
             }
 		    });
 
-        node.connection.statusFlag( node);
+        node.connection.statusFlag(node);
     }
 
-    RED.nodes.registerType( "fritz-guestwifi", GuestWifi);
+    RED.nodes.registerType("fritz-guestwifi", GuestWifi);
 };

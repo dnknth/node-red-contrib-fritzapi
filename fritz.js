@@ -464,6 +464,7 @@ module.exports = function(RED) {
 
     /** Guest wifi can be ON or OFF.
      * FIXME: Broken with FRITZ!Box 7590 running OS 7.01
+     * See: https://github.com/andig/fritzapi/issues/10
      */
 	function GuestWifi(config) {
 		RED.nodes.createNode(this, config);
@@ -501,5 +502,5 @@ module.exports = function(RED) {
         node.connection.statusFlag(node);
     }
 
-    RED.nodes.registerType("fritz-guestwifi", GuestWifi);
+    // RED.nodes.registerType("fritz-guestwifi", GuestWifi);
 };

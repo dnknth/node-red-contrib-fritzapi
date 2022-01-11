@@ -1,6 +1,6 @@
 # node-red-contrib-fritzapi
 
-Control your smart home DECT devices and guest wifi through an AVM Fritz!Box with node-RED.
+Control your smart home DECT devices through an AVM Fritz!Box with node-RED.
 
 These nodes are a simple Node-RED wrapper for [andig's](https://github.com/andig) ever-popular
 [fritzapi](https://www.npmjs.com/package/fritzapi), see there a for feature description.
@@ -17,7 +17,7 @@ enabled on the FRITZ!Box.
 
 ## Usage
 
-The packages contains `thermostat`, `switch`, `bulb`, `blind` and `guest wifi` nodes under the `advanced` section in the palette.
+The packages contains `thermostat`, `switch`, `bulb`, `blind` nodes under the `advanced` section in the palette.
 
 Thermostats, switches and blinds expect an actuator identification number `AIN` as `ain` or `topic` on the input message.
 
@@ -28,7 +28,7 @@ See [fritzapi](https://www.npmjs.com/package/fritzapi) for a list of supported a
 
 Any payload is accepted for information retrieval.
 
-* For switch and wifi updates, send the desired boolean value
+* For switch updates, send the desired boolean value
 (on or off).
 * For thermostat updates, send the target temperature or adjustment in degrees Celsius.
   * There are two special cases: `setTempComfort` (Set to day temperature) and `setTempNight` (Set to night temperature)

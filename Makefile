@@ -16,3 +16,7 @@ clean:
 
 tidy: clean
 	rm -rf $(HOME)/.node-red
+
+publish:
+	npm install
+	npm publish

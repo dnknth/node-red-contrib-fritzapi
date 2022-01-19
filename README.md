@@ -30,7 +30,7 @@ Any payload is accepted for information retrieval.
 
 * For switch updates, send the desired boolean value
 (on or off).
-* For thermostat updates, send the target temperature or adjustment in degrees Celsius.
+* For thermostat updates, send the target temperature or adjustment in degrees Celsius. `on` and `off` may also be used to switch thermostats on or off.
   * There are two special cases: `setTempComfort` (Set to day temperature) and `setTempNight` (Set to night temperature)
 do not expect a temperature as payload, because they set the *target* temperature to the day / night preset.
   * An [example flow](examples/Fritz%20HTTP%20API%20Example%20Flow.json) demonstrates usage of the `thermostat` node.

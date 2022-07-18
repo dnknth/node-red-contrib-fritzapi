@@ -1,5 +1,7 @@
 # node-red-contrib-fritzapi
 
+**This project is no longer actively maintained. Feel free to fork it, new maintainers are welcome.**
+
 Control your smart home DECT devices through an AVM Fritz!Box with node-RED.
 
 These nodes are a simple Node-RED wrapper for [andig's](https://github.com/andig) ever-popular
